@@ -9,8 +9,9 @@ export default class DynamicEffectsAdder {
    *
    * @param {Effect} effect - the effect to handle
    * @param {Actor5e} actor - the effected actor
+   * @param {object} metadata - the metadata
    */
-  async addDynamicEffects(effect, actor) {
+  async addDynamicEffects(effect, actor, metadata) {
     switch (effect.name.toLowerCase()) {
       case 'divine word':
         this._addDivineWordEffects(effect, actor);

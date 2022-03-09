@@ -196,6 +196,7 @@ export default class EffectInterface {
       uuid,
       origin,
       overlay,
+      metadata,
     });
   }
 

@@ -83,8 +83,9 @@ export default class EffectHandler {
    * @param {string} params.uuid - the uuid of the actor to add the effect to
    * @param {string} params.origin - the origin of the effect
    * @param {boolean} params.overlay - if the effect is an overlay or not
+   * @param {object} params.metadata - the additional metadata
    */
-  async addEffect({ effectName, effectData, uuid, origin, overlay }) {
+  async addEffect({ effectName, effectData, uuid, origin, overlay, metadata }) {
     let effect = game.dfreds.effectInterface.findEffectByName(effectName);
 
     if (!effect && effectData) {
@@ -98,7 +99,11 @@ export default class EffectHandler {
     }
 
     if (effect.isDynamic) {
-      await this._dynamicEffectsAdder.addDynamicEffects(effect, actor);
+      await this._dynamicEffectsAdder.addDynamicEffects(
+        effect,
+        actor,
+        metadata
+      );
     }
 
     this._handleIntegrations(effect);
