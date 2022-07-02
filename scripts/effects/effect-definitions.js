@@ -90,6 +90,7 @@ export default class EffectDefinitions {
       this._blindnessDeafnessBlindness,
       this._blindnessDeafnessDeafness,
       this._blur,
+      this._causeFear,
       this._charmPerson,
       this._command,
       this._comprehendLanguages,
@@ -106,6 +107,7 @@ export default class EffectDefinitions {
       this._disguiseSelf,
       this._divineFavor,
       this._divineWord,
+      this._daylight,
 
       this._enlargeReduce,
       this._enlargeReduceEnlarge,
@@ -132,6 +134,8 @@ export default class EffectDefinitions {
       this._fly,
       this._foresight,
       this._freedomOfMovement,
+      this._frostbite,
+      this._gaseousForm,
       this._globeOfInvulnerability,
       this._greaterInvisibility,
       this._guidance,
@@ -139,11 +143,14 @@ export default class EffectDefinitions {
       this._haste,
       this._heroesFeast,
       this._heroism,
+      this._hex,
       this._hideousLaughter,
       this._holdMonster,
       this._holdPerson,
       this._holyAura,
       this._huntersMark,
+      this._hypnoticPattern,
+
       this._invisibility,
       this._irresistibleDance,
       this._jump,
@@ -167,6 +174,8 @@ export default class EffectDefinitions {
       this._regenerate,
       this._resilientSphere,
       this._resistance,
+      this._rimeBindingIce,
+      this._sanctuary,
       this._shield,
       this._shieldOfFaith,
       this._slow,
@@ -202,8 +211,12 @@ export default class EffectDefinitions {
       this._channelDivinitySacredWeapon,
       this._channelDivinityTurnTheUnholy,
       this._channelDivinityTurnUndead,
+      this._eyesofNight,
       this._kiEmptyBody,
       this._kiPatientDefense,
+      this._steadyAim,
+      this._stunningStrike,
+      this._twilightSanctuary,
       this._rage,
       this._recklessAttack,
     ];
@@ -422,7 +435,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.hp.max',
           mode: CONST.ACTIVE_EFFECT_MODES.MULTIPLY,
           value: '0.5',
-          priority: 5,
+          priority: 25,
         },
       ],
     });
@@ -449,7 +462,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '0',
-          priority: 25,
+          priority: 5,
         },
         {
           key: 'flags.midi-qol.disadvantage.attack.all',
@@ -465,7 +478,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.hp.max',
           mode: CONST.ACTIVE_EFFECT_MODES.MULTIPLY,
           value: '0.5',
-          priority: 5,
+          priority: 25,
         },
       ],
     });
@@ -540,7 +553,7 @@ export default class EffectDefinitions {
     return new Effect({
       name: 'Paralyzed',
       description:
-        'Remove all movement, fail all dexterity and strength saves, grant advantage to all who attack, and all attacks within 5 ft. are criticals',
+        'Remove all movement, fail all dexterity and strength saves, grant advantage to all who attack, and all melee attacks that hit are criticals',
       icon: 'modules/dfreds-convenient-effects/images/paralyzed.svg',
       changes: [
         {
@@ -559,9 +572,14 @@ export default class EffectDefinitions {
           value: '1',
         },
         {
-          key: 'flags.midi-qol.grants.critical.range',
-          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
-          value: '5',
+          key: 'flags.midi-qol.grants.critical.mwak',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
+        },
+        {
+          key: 'flags.midi-qol.grants.critical.msak',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
         },
         {
           key: 'data.attributes.movement.all',
@@ -746,7 +764,7 @@ export default class EffectDefinitions {
   /* Spell Effects */
   get _acidArrow() {
     return new Effect({
-      name: 'Acid Arrow',
+      name: '馬友夫強酸箭',
       description: 'Causes 2d4 acid damage at the end of next turn',
       icon: 'systems/dnd5e/icons/spells/needles-acid-2.jpg',
       changes: [
@@ -762,7 +780,7 @@ export default class EffectDefinitions {
 
   get _aid() {
     return new Effect({
-      name: 'Aid',
+      name: '援助術',
       description: 'Add 5 to current and maximum hit points for 8 hours',
       icon: 'systems/dnd5e/icons/spells/heal-sky-1.jpg',
       seconds: Constants.SECONDS.IN_EIGHT_HOURS,
@@ -774,7 +792,7 @@ export default class EffectDefinitions {
 
   get _alterSelf() {
     return new Effect({
-      name: 'Alter Self',
+      name: '變造自身',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/magic/control/debuff-energy-hold-green.webp',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -783,7 +801,7 @@ export default class EffectDefinitions {
 
   get _antilifeShell() {
     return new Effect({
-      name: 'Antilife Shell',
+      name: '反活物護罩',
       description: 'No active effects and lasts for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-jade-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -801,7 +819,7 @@ export default class EffectDefinitions {
 
   get _bane() {
     return new Effect({
-      name: 'Bane',
+      name: '災禍術',
       description:
         'Subtract 1d4 from all saving throws and attack rolls for 1 minute',
       icon: 'systems/dnd5e/icons/spells/rip-magenta-2.jpg',
@@ -839,7 +857,7 @@ export default class EffectDefinitions {
   get _barkskin() {
     // TODO token magic effects
     return new Effect({
-      name: 'Barkskin',
+      name: '樹膚術',
       description: 'Upgrade AC to 16 for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-orange-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -856,7 +874,7 @@ export default class EffectDefinitions {
 
   get _beaconOfHope() {
     return new Effect({
-      name: 'Beacon of Hope',
+      name: '希望信標',
       description:
         'Adds advantage to wisdom saving throws and death saving throws for 1 minute',
       icon: 'systems/dnd5e/icons/spells/light-sky-3.jpg',
@@ -872,13 +890,18 @@ export default class EffectDefinitions {
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '1',
         },
+        {
+          key: 'flags.midi-qol.max.damage.heal',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
+        },
       ],
     });
   }
 
   get _blackTentacles() {
     return new Effect({
-      name: 'Black Tentacles',
+      name: '艾伐黑觸手',
       description: 'Apply the effects of the restrained condition for 1 minute',
       icon: 'systems/dnd5e/icons/spells/vines-eerie-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -888,7 +911,7 @@ export default class EffectDefinitions {
 
   get _bless() {
     return new Effect({
-      name: 'Bless',
+      name: '祝福術',
       description: 'Add 1d4 to all saving throws and attack rolls for 1 minute',
       icon: 'systems/dnd5e/icons/spells/haste-sky-1.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -931,7 +954,7 @@ export default class EffectDefinitions {
 
   get _blindnessDeafness() {
     return new Effect({
-      name: 'Blindness/Deafness',
+      name: '目盲/耳聾術',
       description: 'Choose between blindness or deafness',
       icon: 'systems/dnd5e/icons/spells/evil-eye-red-2.jpg',
       nestedEffects: [
@@ -943,7 +966,7 @@ export default class EffectDefinitions {
 
   get _blindnessDeafnessBlindness() {
     return new Effect({
-      name: 'Blindness',
+      name: '目盲',
       description:
         'Disadvantage on attack rolls while granting advantage to all who attack for 1 minute',
       icon: 'systems/dnd5e/icons/spells/evil-eye-red-2.jpg',
@@ -955,7 +978,7 @@ export default class EffectDefinitions {
 
   get _blindnessDeafnessDeafness() {
     return new Effect({
-      name: 'Deafness',
+      name: '耳聾',
       description: 'No active effects and lasts for 1 minute',
       icon: 'systems/dnd5e/icons/spells/evil-eye-red-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -966,7 +989,7 @@ export default class EffectDefinitions {
 
   get _blur() {
     return new Effect({
-      name: 'Blur',
+      name: '朦朧術',
       description: 'Grants disadvantage to all who attack for 1 minute',
       icon: 'systems/dnd5e/icons/spells/air-burst-sky-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -987,9 +1010,19 @@ export default class EffectDefinitions {
     });
   }
 
+  get _causeFear() {
+    return new Effect({
+      name: '造成恐懼',
+      description: 'Fear lasts for 1 minute',
+      icon: 'icons/magic/death/skeleton-worn-skull-tan.webp',
+      seconds: Constants.SECONDS.IN_ONE_MINUTE,
+      changes: [...this._frightened.changes],
+    });
+  }
+
   get _charmPerson() {
     return new Effect({
-      name: 'Charm Person',
+      name: '魅惑人類',
       description: 'No active effects and lasts for 1 hour',
       icon: 'systems/dnd5e/icons/spells/explosion-magenta-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -999,7 +1032,7 @@ export default class EffectDefinitions {
 
   get _command() {
     return new Effect({
-      name: 'Command',
+      name: '命令術',
       description: 'No active effects and lasts until the end of next turn',
       icon: 'systems/dnd5e/icons/spells/explosion-magenta-1.jpg',
       seconds: CONFIG.time.roundTime,
@@ -1009,7 +1042,7 @@ export default class EffectDefinitions {
 
   get _comprehendLanguages() {
     return new Effect({
-      name: 'Comprehend Languages',
+      name: '通曉語言',
       description: 'Adds all languages for 1 hour',
       icon: 'systems/dnd5e/icons/spells/runes-royal-1.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -1025,7 +1058,7 @@ export default class EffectDefinitions {
 
   get _contagion() {
     return new Effect({
-      name: 'Contagion',
+      name: '疫病術',
       description:
         'Choose between blinding sickness, filth fever, flesh rot, mindfire, seizure, or slimy doom',
       icon: 'systems/dnd5e/icons/spells/rip-magenta-3.jpg',
@@ -1042,7 +1075,7 @@ export default class EffectDefinitions {
 
   get _contagionBlindingSickness() {
     return new Effect({
-      name: 'Blinding Sickness',
+      name: '失明症',
       description:
         'Disadvantage on wisdom checks and wisdom saving throws for 7 days',
       icon: 'systems/dnd5e/icons/spells/rip-magenta-3.jpg',
@@ -1066,7 +1099,7 @@ export default class EffectDefinitions {
 
   get _contagionFilthFever() {
     return new Effect({
-      name: 'Filth Fever',
+      name: '穢熱病',
       description:
         'Disadvantage on strength checks strength saving throws, and attacks that use strength for 7 days',
       icon: 'systems/dnd5e/icons/spells/rip-magenta-3.jpg',
@@ -1094,7 +1127,7 @@ export default class EffectDefinitions {
 
   get _contagionFleshRot() {
     return new Effect({
-      name: 'Flesh Rot',
+      name: '血肉潰爛',
       description:
         'Disadvantage on charisma checks and vulnerability to all damage',
       icon: 'systems/dnd5e/icons/spells/rip-magenta-3.jpg',
@@ -1117,7 +1150,7 @@ export default class EffectDefinitions {
 
   get _contagionMindfire() {
     return new Effect({
-      name: 'Mindfire',
+      name: '腦熱症',
       description:
         'Disadvantage on intelligence checks and intelligence saving throws for 7 days',
       icon: 'systems/dnd5e/icons/spells/rip-magenta-3.jpg',
@@ -1140,7 +1173,7 @@ export default class EffectDefinitions {
 
   get _contagionSeizure() {
     return new Effect({
-      name: 'Seizure',
+      name: '癲癇',
       description:
         'Disadvantage on dexterity checks, dexterity saving throws, and attacks that use dexterity for 7 days',
       icon: 'systems/dnd5e/icons/spells/rip-magenta-3.jpg',
@@ -1168,7 +1201,7 @@ export default class EffectDefinitions {
 
   get _contagionSlimyDoom() {
     return new Effect({
-      name: 'Slimy Doom',
+      name: '黏濘惡疾',
       description:
         'Disadvantage on constitution checks and constitution saving throws for 7 days',
       icon: 'systems/dnd5e/icons/spells/rip-magenta-3.jpg',
@@ -1191,7 +1224,7 @@ export default class EffectDefinitions {
 
   get _darkvision() {
     return new Effect({
-      name: 'Darkvision',
+      name: '黑暗視覺',
       description: 'Upgrade darkvision to 60 ft. for 8 hours',
       icon: 'systems/dnd5e/icons/spells/evil-eye-red-1.jpg',
       seconds: Constants.SECONDS.IN_EIGHT_HOURS,
@@ -1216,7 +1249,7 @@ export default class EffectDefinitions {
 
   get _disguiseSelf() {
     return new Effect({
-      name: 'Disguise Self',
+      name: '易容術',
       description: 'No active effects and lasts for 1 hour',
       icon: 'systems/dnd5e/icons/spells/wind-grasp-eerie-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -1225,7 +1258,7 @@ export default class EffectDefinitions {
 
   get _divineFavor() {
     return new Effect({
-      name: 'Divine Favor',
+      name: '神恩術',
       description: 'Add 1d4 radiant damage to weapon attacks for 1 minute',
       icon: 'systems/dnd5e/icons/spells/enchant-sky-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -1241,7 +1274,7 @@ export default class EffectDefinitions {
 
   get _divineWord() {
     return new Effect({
-      name: 'Divine Word',
+      name: '聖言術',
       description: 'Adds various effects based on the remaining hit points',
       icon: 'systems/dnd5e/icons/spells/light-royal-3.jpg',
       isDynamic: true,
@@ -1251,9 +1284,45 @@ export default class EffectDefinitions {
     });
   }
 
+  get _daylight() {
+    return new Effect({
+      name: '晝明術',
+      description: 'Emits 60/120 light for 1 hour (requires ATL)',
+      icon: 'systems/dnd5e/icons/spells/light-sky-2.jpg',
+      seconds: Constants.SECONDS.IN_ONE_HOUR,
+      atlChanges: [
+        {
+          key: this._createAtlEffectKey('ATL.dimLight'),
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '120',
+        },
+        {
+          key: this._createAtlEffectKey('ATL.brightLight'),
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '60',
+        },
+        {
+          key: this._createAtlEffectKey('ATL.lightColor'),
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: Constants.COLORS.WHITE,
+        },
+        {
+          key: this._createAtlEffectKey('ATL.lightAlpha'),
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: 0.35,
+        },
+        {
+          key: this._createAtlEffectKey('ATL.lightAnimation'),
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '{"type": "pulse", "speed": 3,"intensity": 1}',
+        },
+      ],
+    });
+  }
+
   get _enhanceAbility() {
     return new Effect({
-      name: 'Enhance Ability',
+      name: '強化屬性',
       description:
         "Choose between Bear's Endurance, Bull's Strength, Cat's Grace, Eagle's Splendor, Fox's Cunning, or Owl's Wisdom",
       icon: 'systems/dnd5e/icons/spells/haste-royal-2.jpg',
@@ -1270,7 +1339,7 @@ export default class EffectDefinitions {
 
   get _enhanceAbilityBearsEndurance() {
     return new Effect({
-      name: "Bear's Endurance",
+      name: "熊之堅韌",
       description:
         'Advantage on constitution checks and 2d6 temp hit points (rolled automatically) for 1 hour',
       icon: 'systems/dnd5e/icons/spells/haste-royal-2.jpg',
@@ -1291,7 +1360,7 @@ export default class EffectDefinitions {
 
   get _enhanceAbilityBullsStrength() {
     return new Effect({
-      name: "Bull's Strength",
+      name: "牛之力量",
       description:
         'Advantage on strength checks and double maximum carrying capacity for 1 hour',
       icon: 'systems/dnd5e/icons/spells/haste-royal-2.jpg',
@@ -1315,7 +1384,7 @@ export default class EffectDefinitions {
 
   get _enhanceAbilityCatsGrace() {
     return new Effect({
-      name: "Cat's Grace",
+      name: "貓之優雅",
       description: 'Advantage on dexterity checks for 1 hour',
       icon: 'systems/dnd5e/icons/spells/haste-royal-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -1332,7 +1401,7 @@ export default class EffectDefinitions {
 
   get _enhanceAbilityEaglesSplendor() {
     return new Effect({
-      name: "Eagle's Splendor",
+      name: "鷹之威儀",
       description: 'Advantage on charisma checks for 1 hour',
       icon: 'systems/dnd5e/icons/spells/haste-royal-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -1349,7 +1418,7 @@ export default class EffectDefinitions {
 
   get _enhanceAbilityFoxsCunning() {
     return new Effect({
-      name: "Fox's Cunning",
+      name: "狐之狡黠",
       description: 'Advantage on intelligence checks for 1 hour',
       icon: 'systems/dnd5e/icons/spells/haste-royal-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -1366,7 +1435,7 @@ export default class EffectDefinitions {
 
   get _enhanceAbilityOwlsWisdom() {
     return new Effect({
-      name: "Owl's Wisdom",
+      name: "梟之睿智",
       description: 'Advantage on wisdom checks for 1 hour',
       icon: 'systems/dnd5e/icons/spells/haste-royal-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -1383,7 +1452,7 @@ export default class EffectDefinitions {
 
   get _enlargeReduce() {
     return new Effect({
-      name: 'Enlarge/Reduce',
+      name: '變巨/縮小術',
       description: 'Choose between Enlarge or Reduce',
       icon: 'systems/dnd5e/icons/spells/link-blue-2.jpg',
       nestedEffects: [this._enlargeReduceEnlarge, this._enlargeReduceReduce],
@@ -1392,7 +1461,7 @@ export default class EffectDefinitions {
 
   get _enlargeReduceEnlarge() {
     return new Effect({
-      name: 'Enlarge',
+      name: '變巨',
       description:
         'Add 1d4 to damage and advantage on strength checks and strength saving throws for 1 minute',
       icon: 'systems/dnd5e/icons/spells/link-blue-2.jpg',
@@ -1421,7 +1490,7 @@ export default class EffectDefinitions {
 
   get _enlargeReduceReduce() {
     return new Effect({
-      name: 'Reduce',
+      name: '縮小',
       description:
         'Subtract 1d4 from damage and disadvantage on strength checks and strength saving throws for 1 minute',
       icon: 'systems/dnd5e/icons/spells/link-blue-2.jpg',
@@ -1450,7 +1519,7 @@ export default class EffectDefinitions {
 
   get _faerieFire() {
     return new Effect({
-      name: 'Faerie Fire',
+      name: '妖火術',
       description: 'Grants advantage to all who attack for 1 minute',
       icon: 'systems/dnd5e/icons/spells/fire-arrows-jade-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -1495,7 +1564,7 @@ export default class EffectDefinitions {
 
   get _falseLife() {
     return new Effect({
-      name: 'False Life',
+      name: '摹造生命',
       description:
         'Add 1d4 + 4 temp hit points (rolled automatically) for 1 hour',
       icon: 'systems/dnd5e/icons/spells/heal-royal-1.jpg',
@@ -1508,7 +1577,7 @@ export default class EffectDefinitions {
 
   get _featherFall() {
     return new Effect({
-      name: 'Feather Fall',
+      name: '羽落術',
       description: 'No active effects and lasts for 1 minute',
       icon: 'systems/dnd5e/icons/spells/wind-magenta-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -1517,7 +1586,7 @@ export default class EffectDefinitions {
 
   get _feeblemind() {
     return new Effect({
-      name: 'Feeblemind',
+      name: '弱智術',
       description: 'Set intelligence and charisma scores to 1 until removed',
       icon: 'systems/dnd5e/icons/spells/light-eerie-3.jpg',
       changes: [
@@ -1539,7 +1608,7 @@ export default class EffectDefinitions {
 
   get _fireShield() {
     return new Effect({
-      name: 'Fire Shield',
+      name: '火焰護盾',
       description: 'Choose between cold or fire resistance',
       icon: 'systems/dnd5e/icons/spells/protect-red-3.jpg',
       nestedEffects: [
@@ -1551,7 +1620,7 @@ export default class EffectDefinitions {
 
   get _fireShieldColdResistance() {
     return new Effect({
-      name: 'Fire Shield (Cold Resistance)',
+      name: '火焰護盾 (寒冰抗性)',
       description: 'Add damage resistance to cold for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/protect-red-3.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -1602,7 +1671,7 @@ export default class EffectDefinitions {
 
   get _fireShieldFireResistance() {
     return new Effect({
-      name: 'Fire Shield (Fire Resistance)',
+      name: '火焰護盾 (火焰抗性)',
       description: 'Add damage resistance to fire for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/protect-red-3.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -1653,7 +1722,7 @@ export default class EffectDefinitions {
 
   get _findThePath() {
     return new Effect({
-      name: 'Find the Path',
+      name: '尋找捷徑',
       description: 'No active effects and lasts for 1 day',
       icon: 'systems/dnd5e/icons/spells/light-jade-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_DAY,
@@ -1662,7 +1731,7 @@ export default class EffectDefinitions {
 
   get _fly() {
     return new Effect({
-      name: 'Fly',
+      name: '飛行術',
       description: 'Upgrade flying speed to 60 ft. for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/link-spirit-1.jpg',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
@@ -1679,7 +1748,7 @@ export default class EffectDefinitions {
 
   get _foresight() {
     return new Effect({
-      name: 'Foresight',
+      name: '預視術',
       description:
         'Grants advantage on attack rolls, ability checks, and saving throws while granting disadvantage to all who attack for 8 hours',
       icon: 'systems/dnd5e/icons/spells/evil-eye-eerie-3.jpg',
@@ -1716,16 +1785,43 @@ export default class EffectDefinitions {
 
   get _freedomOfMovement() {
     return new Effect({
-      name: 'Freedom of Movement',
+      name: '行動自如術',
       description: 'No active effects and lasts for 1 hour',
       icon: 'systems/dnd5e/icons/spells/slice-spirit-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
     });
   }
 
+  get _frostbite() {
+    return new Effect({
+      name: '霜噬',
+      description: 'No active effects and lasts for 1 hour',
+      icon: 'icons/magic/water/snowflake-ice-snow-white.webp',
+      seconds: CONFIG.time.roundTime,
+      turns: 1,
+      flags: {
+        dae: {
+          specialDuration: ['1Attack:mwak','1Attack:rwak'],
+        },
+      },
+      changes: [
+        {
+          key: 'flags.midi-qol.disadvantage.attack.mwak',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
+        },
+        {
+          key: 'flags.midi-qol.disadvantage.attack.rwak',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
+        },
+      ],
+    });
+  }
+
   get _globeOfInvulnerability() {
     return new Effect({
-      name: 'Globe of Invulnerability',
+      name: '法術無效結界',
       description: 'No active effects and lasts for 1 minute',
       icon: 'systems/dnd5e/icons/spells/protect-blue-3.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -1739,9 +1835,59 @@ export default class EffectDefinitions {
     });
   }
 
+  get _gaseousForm() {
+    return new Effect({
+      name: '氣化形體',
+      description: 'Transform into a misty for 1 hour',
+      icon: 'icons/magic/air/wind-swirl-gray-blue.webp',
+      seconds: Constants.SECONDS.IN_ONE_HOUR,
+      changes: [
+        {
+          key: 'data.attributes.movement.all',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '0',
+          priority: 25,
+        },
+        {
+          key: 'data.attributes.movement.fly',
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '10',
+          priority: 50,
+        },
+        {
+          key: 'data.traits.dr.value',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: 'physical',
+        },
+        {
+          key: 'flags.midi-qol.advantage.ability.check.str',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
+        },
+        {
+          key: 'flags.midi-qol.advantage.ability.check.dex',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
+        },
+        {
+          key: 'flags.midi-qol.advantage.ability.check.con',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
+        },
+      ],
+      tokenMagicChanges: [
+        {
+          key: 'macro.tokenMagic',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: 'Fairy Outline',
+        },
+      ],
+    });
+  }
+
   get _greaterInvisibility() {
     return new Effect({
-      name: 'Greater Invisibility',
+      name: '高等隱形術',
       description:
         'Grants advantage on attack rolls while forcing disadvantage to all who attack for 1 minute',
       icon: 'systems/dnd5e/icons/spells/fog-water-air-3.jpg',
@@ -1758,12 +1904,19 @@ export default class EffectDefinitions {
           value: '1',
         },
       ],
+      tokenMagicChanges: [
+        {
+          key: 'macro.tokenMagic',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: 'smoke',
+        },
+      ],
     });
   }
 
   get _guidance() {
     return new Effect({
-      name: 'Guidance',
+      name: '指導術',
       description: 'Adds 1d4 to one ability or skill check for 1 minute',
       icon: 'systems/dnd5e/icons/spells/haste-sky-1.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -1789,7 +1942,7 @@ export default class EffectDefinitions {
 
   get _guidingBolt() {
     return new Effect({
-      name: 'Guiding Bolt',
+      name: '光導箭',
       description:
         'Grants advantage to next attacker or until the end of next turn',
       icon: 'systems/dnd5e/icons/spells/fireball-sky-2.jpg',
@@ -1812,7 +1965,7 @@ export default class EffectDefinitions {
 
   get _haste() {
     return new Effect({
-      name: 'Haste',
+      name: '加速術',
       description:
         'Double speed, add 2 to AC, and advantage on dexterity saving throws for 1 minute',
       icon: 'systems/dnd5e/icons/spells/haste-royal-2.jpg',
@@ -1840,7 +1993,7 @@ export default class EffectDefinitions {
 
   get _heroesFeast() {
     return new Effect({
-      name: "Heroes' Feast",
+      name: "英雄宴",
       description:
         'Immunity to poison and frightened, make all wisdom saving throws with advantage, and hit point maximum increases by 2d10 for 24 hours',
       icon: 'systems/dnd5e/icons/spells/heal-royal-3.jpg',
@@ -1870,7 +2023,7 @@ export default class EffectDefinitions {
 
   get _heroism() {
     return new Effect({
-      name: 'Heroism',
+      name: '英雄氣概',
       description: 'Immunity to frightened for 1 minute',
       icon: 'systems/dnd5e/icons/spells/heal-sky-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -1886,7 +2039,7 @@ export default class EffectDefinitions {
 
   get _hideousLaughter() {
     return new Effect({
-      name: 'Hideous Laughter',
+      name: '塔莎狂笑術',
       description:
         'Apply the effects of the prone and incapacitated conditions for 1 minute',
       icon: 'systems/dnd5e/icons/spells/explosion-magenta-2.jpg',
@@ -1897,7 +2050,7 @@ export default class EffectDefinitions {
 
   get _holdMonster() {
     return new Effect({
-      name: 'Hold Monster',
+      name: '怪物定身術',
       description: 'Apply the effects of the paralyzed condition for 1 minute',
       icon: 'systems/dnd5e/icons/spells/shielding-fire-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -1920,7 +2073,7 @@ export default class EffectDefinitions {
   // label=Hold Person
   get _holdPerson() {
     return new Effect({
-      name: 'Hold Person',
+      name: '人類定身術',
       description: 'Apply the effects of the paralyzed condition for 1 minute',
       icon: 'systems/dnd5e/icons/spells/shielding-eerie-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -1937,7 +2090,7 @@ export default class EffectDefinitions {
 
   get _holyAura() {
     return new Effect({
-      name: 'Holy Aura',
+      name: '神聖靈光',
       description:
         'Advantage on saving throws, grant disadvantage to all who attack, and emit dim light in 5 radius (requires ATL) for 1 minute',
       icon: 'systems/dnd5e/icons/spells/haste-sky-3.jpg',
@@ -1981,15 +2134,45 @@ export default class EffectDefinitions {
 
   get _huntersMark() {
     return new Effect({
-      name: "Hunter's Mark",
+      name: "獵人印記",
       description: 'No active effects and lasts until removed (for now)',
       icon: 'systems/dnd5e/icons/spells/evil-eye-red-1.jpg',
     });
   }
 
+  get _hex() {
+    return new Effect({
+      name: "脆弱詛咒",
+      description: 'No active effects and lasts until removed (for now)',
+      icon: 'systems/dnd5e/icons/skills/violet_20.jpg',
+    });
+  }
+
+  get _hypnoticPattern() {
+    return new Effect({
+      name: "催眠圖紋",
+      description: 'Becomes charmed, incapacitated, and has a speed of 0.',
+      icon: 'icons/magic/control/fear-fright-white.webp',
+      seconds: Constants.SECONDS.IN_ONE_MINUTE,
+      flags: {
+        dae: {
+          specialDuration: ['isDamaged'],
+        },
+      },
+      changes: [...this._incapacitated.changes, ...this._charmed.changes,
+        {
+          key: 'data.attributes.movement.all',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '0',
+          priority: 5,
+        },
+      ],
+    });
+  }
+
   get _invisibility() {
     return new Effect({
-      name: 'Invisibility',
+      name: '隱形術',
       description:
         'Grants advantage on next attack roll while forcing disadvantage to all who attack for 1 hour. Expires after 1 attack.',
       icon: 'systems/dnd5e/icons/spells/fog-sky-2.jpg',
@@ -2011,12 +2194,19 @@ export default class EffectDefinitions {
           value: '1',
         },
       ],
+      tokenMagicChanges: [
+        {
+          key: 'macro.tokenMagic',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: 'smoke',
+        },
+      ],
     });
   }
 
   get _irresistibleDance() {
     return new Effect({
-      name: 'Irresistible Dance',
+      name: '奧圖狂舞術',
       description:
         'Zero movement, disadvantage on dexterity saving throws, disadvantage on attack rolls, and grants advantage to all who attack for 1 minute',
       icon: 'systems/dnd5e/icons/spells/link-blue-2.jpg',
@@ -2026,7 +2216,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '0',
-          priority: 25,
+          priority: 5,
         },
         {
           key: 'flags.midi-qol.disadvantage.ability.save.dex',
@@ -2049,7 +2239,7 @@ export default class EffectDefinitions {
 
   get _jump() {
     return new Effect({
-      name: 'Jump',
+      name: '跳躍術',
       description: 'No active effects and lasts for 1 minute',
       icon: 'systems/dnd5e/icons/spells/wind-grasp-sky-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -2058,7 +2248,7 @@ export default class EffectDefinitions {
 
   get _light() {
     return new Effect({
-      name: 'Light',
+      name: '光亮術',
       description: 'Emits 20/40 light for 1 hour (requires ATL)',
       icon: 'systems/dnd5e/icons/spells/light-sky-1.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -2094,7 +2284,7 @@ export default class EffectDefinitions {
 
   get _longstrider() {
     return new Effect({
-      name: 'Longstrider',
+      name: '大步奔行',
       description: 'Increase all movement by 10 ft. for 1 hour',
       icon: 'systems/dnd5e/icons/spells/wind-sky-1.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -2103,7 +2293,6 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '+10',
-          priority: 25,
         },
       ],
     });
@@ -2111,7 +2300,7 @@ export default class EffectDefinitions {
 
   get _mageArmor() {
     return new Effect({
-      name: 'Mage Armor',
+      name: '法師護甲',
       description: 'Upgrades armor to 13 + dex modifier for 8 hours',
       icon: 'systems/dnd5e/icons/spells/protect-blue-1.jpg',
       seconds: Constants.SECONDS.IN_EIGHT_HOURS,
@@ -2123,12 +2312,19 @@ export default class EffectDefinitions {
           priority: 5,
         },
       ],
+      tokenMagicChanges: [
+        {
+          key: 'macro.tokenMagic',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: 'mantle-of-madness',
+        },
+      ],
     });
   }
 
   get _mindBlank() {
     return new Effect({
-      name: 'Mind Blank',
+      name: '心靈屏障',
       description: 'Adds immunity to psychic damage for 24 hours',
       icon: 'systems/dnd5e/icons/spells/air-burst-sky-3.jpg',
       seconds: Constants.SECONDS.IN_ONE_DAY,
@@ -2137,6 +2333,11 @@ export default class EffectDefinitions {
           key: 'data.traits.di.value',
           mode: CONST.ACTIVE_EFFECT_MODES.ADD,
           value: 'psychic',
+        },
+        {
+          key: 'data.traits.ci.value',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: 'charmed',
         },
       ],
     });
@@ -2161,7 +2362,7 @@ export default class EffectDefinitions {
   get _passWithoutTrace() {
     // TODO token magic effects
     return new Effect({
-      name: 'Pass without Trace',
+      name: '行蹤無跡',
       description: 'Add 10 to stealth checks for 1 hour',
       icon: 'systems/dnd5e/icons/spells/fog-air-1.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -2177,7 +2378,7 @@ export default class EffectDefinitions {
 
   get _protectionFromEnergy() {
     return new Effect({
-      name: 'Protection from Energy',
+      name: '防護能量',
       description:
         'Choose between acid, cold, fire, lightning, or thunder resistance',
       icon: 'systems/dnd5e/icons/spells/protect-jade-2.jpg',
@@ -2194,7 +2395,7 @@ export default class EffectDefinitions {
   get _protectionFromEnergyAcid() {
     // TODO token magic effects
     return new Effect({
-      name: 'Protection from Acid',
+      name: '防護酸蝕',
       description: 'Adds damage resistance to acid for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-jade-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2212,7 +2413,7 @@ export default class EffectDefinitions {
   get _protectionFromEnergyCold() {
     // TODO token magic effects
     return new Effect({
-      name: 'Protection from Cold',
+      name: '防護寒冷',
       description: 'Adds damage resistance to cold for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-jade-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2230,7 +2431,7 @@ export default class EffectDefinitions {
   get _protectionFromEnergyFire() {
     // TODO token magic effects
     return new Effect({
-      name: 'Protection from Fire',
+      name: '防護火焰',
       description: 'Adds damage resistance to fire for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-jade-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2248,7 +2449,7 @@ export default class EffectDefinitions {
   get _protectionFromEnergyLightning() {
     // TODO token magic effects
     return new Effect({
-      name: 'Protection from Lightning',
+      name: '防護閃電',
       description: 'Adds damage resistance to lightning for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-jade-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2266,7 +2467,7 @@ export default class EffectDefinitions {
   get _protectionFromEnergyThunder() {
     // TODO token magic effects
     return new Effect({
-      name: 'Protection from Thunder',
+      name: '防護雷鳴',
       description: 'Adds damage resistance to thunder for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-jade-2.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2284,7 +2485,7 @@ export default class EffectDefinitions {
   get _protectionFromPoison() {
     // TODO token magic effects
     return new Effect({
-      name: 'Protection from Poison',
+      name: '防護毒素',
       description:
         'Adds resistance to poison for 1 hour (does not grant automatic advantage on saving throws against poison)',
       icon: 'systems/dnd5e/icons/spells/protect-acid-1.jpg',
@@ -2301,7 +2502,7 @@ export default class EffectDefinitions {
 
   get _protectionFromEvilAndGood() {
     return new Effect({
-      name: 'Protection from Evil and Good',
+      name: '防護善惡',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/protect-sky-2.jpg',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
@@ -2310,7 +2511,7 @@ export default class EffectDefinitions {
 
   get _rayOfFrost() {
     return new Effect({
-      name: 'Ray of Frost',
+      name: '冷凍射線',
       description: 'Lowers movement by 10 ft',
       icon: 'systems/dnd5e/icons/spells/beam-blue-1.jpg',
       seconds: CONFIG.time.roundTime,
@@ -2319,7 +2520,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '-10',
-          priority: 25,
+          priority: 5,
         },
       ],
     });
@@ -2327,7 +2528,7 @@ export default class EffectDefinitions {
 
   get _regenerate() {
     return new Effect({
-      name: 'Regenerate',
+      name: '再生術',
       description: 'Regain 1 hit point at the start of each turn for 1 hour',
       icon: 'systems/dnd5e/icons/spells/heal-jade-3.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -2344,7 +2545,7 @@ export default class EffectDefinitions {
 
   get _resilientSphere() {
     return new Effect({
-      name: 'Resilient Sphere',
+      name: '歐提路克魔封法球',
       description: 'Adds total immunity to all damage and half movement',
       icon: 'systems/dnd5e/icons/spells/light-magenta-3.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -2353,7 +2554,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '*0.5',
-          priority: 25,
+          priority: 5,
         },
         {
           key: 'data.traits.di.all',
@@ -2366,7 +2567,7 @@ export default class EffectDefinitions {
 
   get _resistance() {
     return new Effect({
-      name: 'Resistance',
+      name: '提升抗力',
       description: 'Add 1d4 to a single saving throw in the next minute',
       icon: 'systems/dnd5e/icons/spells/protect-royal-1.jpg',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
@@ -2384,10 +2585,55 @@ export default class EffectDefinitions {
       ],
     });
   }
+ 
+  get _rimeBindingIce() {
+    return new Effect({
+      name: '萊姆冰封術',
+      description: 'Speed down to 0 in the next minute or until one break the frost',
+      icon: 'systems/dnd5e/icons/spells/ice-sky-3.jpg',
+      seconds: Constants.SECONDS.IN_ONE_MINUTE,
+      changes: [
+        {
+          key: 'data.attributes.movement.all',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '0',
+          priority: 5,
+        },
+      ],
+      tokenMagicChanges: [
+        {
+          key: 'macro.tokenMagic',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: 'Super-Frost',
+        },
+      ],
+    });
+  }
+
+  get _sanctuary() {
+    return new Effect({
+      name: '聖域術',
+      description: 'Can not be attack in the next minute or until harm to someone',
+      icon: 'icons/magic/holy/barrier-shield-winged-cross.webp',
+      seconds: Constants.SECONDS.IN_ONE_MINUTE,
+      flags: {
+        dae: {
+          specialDuration: ['DamageDealt','1Attack'],
+        },
+      },
+      tokenMagicChanges: [
+        {
+          key: 'macro.tokenMagic',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: 'fumes',
+        },
+      ],
+    });
+  }
 
   get _shield() {
     return new Effect({
-      name: 'Shield',
+      name: '護盾術',
       description: 'Add 5 to AC until next turn',
       icon: 'systems/dnd5e/icons/spells/protect-magenta-1.jpg',
       seconds: CONFIG.time.roundTime,
@@ -2401,7 +2647,6 @@ export default class EffectDefinitions {
           key: 'data.attributes.ac.bonus',
           mode: CONST.ACTIVE_EFFECT_MODES.ADD,
           value: '+5',
-          priority: 5,
         },
       ],
       tokenMagicChanges: [
@@ -2416,7 +2661,7 @@ export default class EffectDefinitions {
 
   get _shieldOfFaith() {
     return new Effect({
-      name: 'Shield of Faith',
+      name: '虔誠護盾',
       description: 'Adds 2 to the AC for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/protect-sky-2.jpg',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
@@ -2439,7 +2684,7 @@ export default class EffectDefinitions {
 
   get _slow() {
     return new Effect({
-      name: 'Slow',
+      name: '緩速術',
       description:
         'Halves movement and and subtract 2 from AC and dexterity saving throws for 1 minute',
       icon: 'systems/dnd5e/icons/spells/fog-magenta-2.jpg',
@@ -2459,7 +2704,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '*0.5',
-          priority: 25,
+          priority: 5,
         },
       ],
     });
@@ -2467,7 +2712,7 @@ export default class EffectDefinitions {
 
   get _speakWithAnimals() {
     return new Effect({
-      name: 'Speak with Animals',
+      name: '動物交談術',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/wild-jade-1.jpg',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
@@ -2476,7 +2721,7 @@ export default class EffectDefinitions {
 
   get _speakWithDead() {
     return new Effect({
-      name: 'Speak with Dead',
+      name: '死者交談術',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/horror-acid-1.jpg',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
@@ -2485,7 +2730,7 @@ export default class EffectDefinitions {
 
   get _speakWithPlants() {
     return new Effect({
-      name: 'Speak with Plants',
+      name: '植物交談術',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/leaf-jade-1.jpg',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
@@ -2494,7 +2739,7 @@ export default class EffectDefinitions {
 
   get _spiderClimb() {
     return new Effect({
-      name: 'Spider Climb',
+      name: '蛛行術',
       description: 'Grants climbing speed equal to walking speed for 1 hour',
       icon: 'systems/dnd5e/icons/spells/shielding-spirit-1.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -2503,7 +2748,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.climb',
           mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE,
           value: '@attributes.movement.walk',
-          priority: 25,
+          priority: 5,
         },
       ],
     });
@@ -2511,10 +2756,39 @@ export default class EffectDefinitions {
 
   get _spiritGuardians() {
     return new Effect({
-      name: 'Spirit Guardians',
+      name: '靈體守衛',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/needles-sky-2.jpg',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
+      changes: [
+        {          
+          key: 'flags.midi-qol.OverTime',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: 'turn=start, saveAbility=wis, saveDC=@attributes.spelldc, saveDamage=halfdamage, rollType=save, saveMagic=true, damageBeforeSave=false, damageRoll=3d8, damageType=radiant',
+          priority: '0'
+	},
+        {          
+          key: 'data.attributes.movement.all',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '0.5',
+          priority: '20'
+        },
+      ],
+      flags: {
+        "ActiveAuras": {
+          "isAura": true,
+          "aura": "Enemy",
+          "radius": 30,
+          "alignment": "",
+          "type": "",
+          "ignoreSelf": true,
+          "height": true,
+          "hidden": true,
+          "displayTemp": true,
+          "hostile": false,
+          "onlyOnce": false
+        }
+      },
     });
   }
 
@@ -2530,7 +2804,7 @@ export default class EffectDefinitions {
   get _stoneskin() {
     // TODO token magic effects
     return new Effect({
-      name: 'Stoneskin',
+      name: '石膚術',
       description: 'Adds resistance to non-magical physical damage for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-orange-2.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -2546,7 +2820,7 @@ export default class EffectDefinitions {
 
   get _suggestion() {
     return new Effect({
-      name: 'Suggestion',
+      name: '暗示術',
       description: 'No active effects and lasts for 8 hours',
       icon: 'systems/dnd5e/icons/spells/air-burst-magenta-2.jpg',
       seconds: Constants.SECONDS.IN_EIGHT_HOURS,
@@ -2555,7 +2829,7 @@ export default class EffectDefinitions {
 
   get _telekinesis() {
     return new Effect({
-      name: 'Telekinesis',
+      name: '心靈遙控',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'systems/dnd5e/icons/spells/wind-grasp-air-3.jpg',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
@@ -2564,7 +2838,7 @@ export default class EffectDefinitions {
 
   get _trueStrike() {
     return new Effect({
-      name: 'True Strike',
+      name: '克敵機先',
       description:
         'Grants advantage on next attack or until the end of next turn',
       icon: 'systems/dnd5e/icons/spells/enchant-sky-1.jpg',
@@ -2587,7 +2861,7 @@ export default class EffectDefinitions {
 
   get _viciousMockery() {
     return new Effect({
-      name: 'Vicious Mockery',
+      name: '惡毒嘲笑',
       description:
         'Grants disadvantage on next attack or until the end of next turn',
       icon: 'icons/skills/toxins/cup-goblet-poisoned-spilled.webp',
@@ -2610,7 +2884,7 @@ export default class EffectDefinitions {
 
   get _wardingBond() {
     return new Effect({
-      name: 'Warding Bond',
+      name: '守護聯結',
       description:
         'Adds 1 to AC and saving throws and grants resistance to all damage for 1 hour',
       icon: 'systems/dnd5e/icons/spells/protect-sky-2.jpg',
@@ -2642,7 +2916,7 @@ export default class EffectDefinitions {
 
   get _waterBreathing() {
     return new Effect({
-      name: 'Water Breathing',
+      name: '水下呼吸',
       description: 'No active effects and lasts for 24 hours',
       icon: 'icons/magic/water/pseudopod-swirl-blue.webp',
       seconds: Constants.SECONDS.IN_ONE_DAY,
@@ -2651,7 +2925,7 @@ export default class EffectDefinitions {
 
   get _waterWalk() {
     return new Effect({
-      name: 'Water Walk',
+      name: '水面行走',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/creatures/slimes/slime-movement-swirling-blue.webp',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -2661,7 +2935,7 @@ export default class EffectDefinitions {
   /** Class specific */
   get _bardicInspiration() {
     return new Effect({
-      name: 'Bardic Inspiration',
+      name: '吟遊激勵',
       description:
         'Add a dice to a single ability check, attack roll, or saving throw in the next 10 minutes',
       icon: 'systems/dnd5e/icons/skills/yellow_08.jpg',
@@ -2677,7 +2951,7 @@ export default class EffectDefinitions {
 
   get _bardicInspirationD6() {
     return new Effect({
-      name: 'Bardic Inspiration (d6)',
+      name: '吟遊激勵 (d6)',
       description: 'For bards from level 1 to level 4',
       icon: 'systems/dnd5e/icons/skills/yellow_08.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2709,7 +2983,7 @@ export default class EffectDefinitions {
 
   get _bardicInspirationD8() {
     return new Effect({
-      name: 'Bardic Inspiration (d8)',
+      name: '吟遊激勵 (d8)',
       description: 'For bards from level 5 to level 9',
       icon: 'systems/dnd5e/icons/skills/yellow_08.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2741,7 +3015,7 @@ export default class EffectDefinitions {
 
   get _bardicInspirationD10() {
     return new Effect({
-      name: 'Bardic Inspiration (d10)',
+      name: '吟遊激勵 (d10)',
       description: 'For bards from level 10 to level 14',
       icon: 'systems/dnd5e/icons/skills/yellow_08.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2773,7 +3047,7 @@ export default class EffectDefinitions {
 
   get _bardicInspirationD12() {
     return new Effect({
-      name: 'Bardic Inspiration (d12)',
+      name: '吟遊激勵 (d12)',
       description: 'For bards from level 15 to level 20',
       icon: 'systems/dnd5e/icons/skills/yellow_08.jpg',
       isViewable: this._settings.showNestedEffects,
@@ -2805,7 +3079,7 @@ export default class EffectDefinitions {
 
   get _channelDivinitySacredWeapon() {
     return new Effect({
-      name: 'Channel Divinity: Sacred Weapon',
+      name: '引導神力:至聖武器',
       description:
         'Add charisma modifier (minimum +1) to all weapon attack rolls and emits 20/40 light for 1 minute (requires ATL)',
       icon: 'systems/dnd5e/icons/skills/light_05.jpg',
@@ -2854,7 +3128,7 @@ export default class EffectDefinitions {
 
   get _channelDivinityTurnTheUnholy() {
     return new Effect({
-      name: 'Channel Divinity: Turn the Unholy',
+      name: '引導神力:驅散不潔者',
       description:
         'No active effects and lasts for 1 minute. Expires on taking damage.',
       icon: 'icons/magic/fire/explosion-embers-evade-silhouette.webp',
@@ -2869,7 +3143,7 @@ export default class EffectDefinitions {
 
   get _channelDivinityTurnUndead() {
     return new Effect({
-      name: 'Channel Divinity: Turn Undead',
+      name: '引導神力:驅散不死',
       description:
         'No active effects and lasts for 1 minute. Expires on taking damage.',
       icon: 'systems/dnd5e/icons/skills/yellow_19.jpg',
@@ -2882,9 +3156,34 @@ export default class EffectDefinitions {
     });
   }
 
+  get _eyesofNight() {
+    return new Effect({
+      name: '黑夜明目',
+      description: 'Upgrade darkvision to 300 ft. for 1 hours',
+      icon: 'systems/dnd5e/icons/spells/evil-eye-eerie-3.jpg',
+      seconds: Constants.SECONDS.IN_ONE_HOURS,
+      changes: [
+        {
+          key: 'data.attributes.senses.darkvision',
+          mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE,
+          value: '300',
+          priority: 5,
+        },
+      ],
+      atlChanges: [
+        {
+          key: this._createAtlEffectKey('ATL.dimSight'),
+          mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE,
+          value: '300',
+          priority: 5,
+        },
+      ],
+    });
+  }
+
   get _kiEmptyBody() {
     return new Effect({
-      name: 'Ki: Empty Body',
+      name: '空靈體',
       description:
         'Grants advantage on attack rolls, forces disadvantage to all who attack, and grants resistance to all damage except force for 1 minute',
       icon: 'icons/magic/perception/silhouette-stealth-shadow.webp',
@@ -2981,7 +3280,7 @@ export default class EffectDefinitions {
 
   get _kiPatientDefense() {
     return new Effect({
-      name: 'Ki: Patient Defense',
+      name: '氣:堅強防禦',
       description:
         'Grants disadvantage to all who attack and advantage on all dexterity saving throws until next turn',
       icon: 'icons/magic/defensive/shield-barrier-glowing-blue.webp',
@@ -3005,9 +3304,51 @@ export default class EffectDefinitions {
     });
   }
 
+  get _stunningStrike() {
+    return new Effect({
+      name: '震懾拳',
+      description:
+        'Interfere with the flow of ki in an opponent, the target be stunned until the end of your next turn',
+      icon: 'systems/dnd5e/icons/skills/fire_07.jpg',
+      changes: [...this._stunned.changes],
+      flags: {
+        dae: {
+          specialDuration: ['turnEndSource'],
+        },
+      },
+    });
+  }
+
+  get _steadyAim() {
+    return new Effect({
+      name: '手穩就准',
+      description:
+        'Advantage on next attack roll on the current turn, speed is 0 until the end of the current turn',
+      icon: 'icons/skills/ranged/archery-bow-attack-yellow.webp',
+      seconds: CONFIG.time.roundTime,
+      changes: [
+        {
+          key: 'flags.midi-qol.advantage.attack.all',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '1',
+        },
+        {
+          key: 'data.attributes.movement.all',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '0',
+        },
+      ],
+      flags: {
+        dae: {
+          specialDuration: ['1Attack','isMoved'],
+        },
+      },
+    });
+  }
+
   get _rage() {
     return new Effect({
-      name: 'Rage',
+      name: '狂暴',
       description:
         'Advantage on strength checks and strength saving throws, a variable bonus to melee damage based on barbarian level, and resistance to piercing, bludgeoning, and slashing damage for 1 minute. Also handles Path of the Totem Warrior resistances.',
       icon: 'systems/dnd5e/icons/skills/red_10.jpg',
@@ -3043,9 +3384,45 @@ export default class EffectDefinitions {
     });
   }
 
+  get _twilightSanctuary() {
+    return new Effect({
+      name: '暮光聖域',
+      description:
+        'You grant 30-foot radius temporary hit points equal to 1d6 + cleric level or end one charmed or frightened effect for 1 minute.',
+      icon: 'icons/magic/life/heart-area-circle-red-green.webp',
+      seconds: Constants.SECONDS.IN_ONE_MINUTE,
+      isDynamic: true,
+      changes: [
+        {          
+          key: 'flags.midi-qol.OverTime',
+          mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE,
+          value: 'turn=end,damageRoll=1d6+@classes.cleric.levels,damageType=temphp,label=暮光聖域',
+        },
+      ],
+      flags: {
+        dae: {
+          specialDuration: ['zeroHP'],
+        },
+        "ActiveAuras": {
+          "isAura": true,
+          "aura": "Allies",
+          "radius": 30,
+          "alignment": "",
+          "type": "",
+          "ignoreSelf": false,
+          "height": true,
+          "hidden": true,
+          "displayTemp": true,
+          "hostile": false,
+          "onlyOnce": false
+        }
+      },
+    });
+  }
+
   get _recklessAttack() {
     return new Effect({
-      name: 'Reckless Attack',
+      name: '魯莽攻擊',
       description:
         'Advantage on melee attacks and grants advantage to those who attack for 1 turn',
       icon: 'systems/dnd5e/icons/skills/weapon_34.jpg',
@@ -3068,7 +3445,7 @@ export default class EffectDefinitions {
   /* Equipment effects */
   get _bullseyeLantern() {
     return new Effect({
-      name: 'Bullseye Lantern',
+      name: '牛眼提燈',
       description:
         'Adds lantern light in a 60 degree cone for 6 hours (requires ATL)',
       icon: 'systems/dnd5e/icons/items/inventory/lantern.jpg',
@@ -3110,7 +3487,7 @@ export default class EffectDefinitions {
 
   get _candle() {
     return new Effect({
-      name: 'Candle',
+      name: '蠟燭',
       description: 'Adds candle light for 1 hour (requires ATL)',
       icon: 'systems/dnd5e/icons/items/inventory/candle.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -3146,7 +3523,7 @@ export default class EffectDefinitions {
 
   get _hoodedLantern() {
     return new Effect({
-      name: 'Hooded Lantern',
+      name: '提燈 (附蓋)',
       description: 'Adds hooded lantern light for 6 hours (requires ATL)',
       icon: 'systems/dnd5e/icons/items/inventory/lantern.jpg',
       seconds: Constants.SECONDS.IN_SIX_HOURS,
@@ -3182,7 +3559,7 @@ export default class EffectDefinitions {
 
   get _lantern() {
     return new Effect({
-      name: 'Lantern',
+      name: '提燈',
       description: 'Adds lantern light for 6 hours (requires ATL)',
       icon: 'systems/dnd5e/icons/items/inventory/lantern.jpg',
       seconds: Constants.SECONDS.IN_SIX_HOURS,
@@ -3218,7 +3595,7 @@ export default class EffectDefinitions {
 
   get _torch() {
     return new Effect({
-      name: 'Torch',
+      name: '火炬',
       description: 'Adds torch light for 1 hour (requires ATL)',
       icon: 'systems/dnd5e/icons/items/inventory/torch.jpg',
       seconds: Constants.SECONDS.IN_ONE_HOUR,
@@ -3255,7 +3632,7 @@ export default class EffectDefinitions {
   /* Other effects */
   get _bonusAction() {
     return new Effect({
-      name: 'Bonus Action',
+      name: '附贈動作',
       description: 'No active effects and expires on turn start',
       icon: 'modules/dfreds-convenient-effects/images/bonus-action.svg',
       flags: {
@@ -3268,7 +3645,7 @@ export default class EffectDefinitions {
 
   get _coverHalf() {
     return new Effect({
-      name: 'Cover (Half)',
+      name: '半掩蔽',
       description: 'Adds 2 to AC and dexterity saving throws',
       icon: 'modules/dfreds-convenient-effects/images/broken-wall.svg',
       changes: [
@@ -3288,7 +3665,7 @@ export default class EffectDefinitions {
 
   get _coverThreeQuarters() {
     return new Effect({
-      name: 'Cover (Three-Quarters)',
+      name: '四分之三掩蔽',
       description: 'Adds 5 to AC and dexterity saving throws',
       icon: 'modules/dfreds-convenient-effects/images/brick-wall.svg',
       changes: [
@@ -3316,7 +3693,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '-10',
-          priority: 25,
+          priority: 5,
         },
       ],
     });
@@ -3324,7 +3701,7 @@ export default class EffectDefinitions {
 
   get _dodge() {
     return new Effect({
-      name: 'Dodge',
+      name: '迴避',
       description:
         'Grants disadvantage to all who attack and advantage on all dexterity saving throws until next turn',
       icon: 'modules/dfreds-convenient-effects/images/dodging.svg',
@@ -3390,7 +3767,7 @@ export default class EffectDefinitions {
 
   get _greatWeaponMaster() {
     return new Effect({
-      name: 'Great Weapon Master',
+      name: '巨武大師',
       description: 'Subtracts 5 from melee attacks but adds 10 to melee damage',
       icon: 'systems/dnd5e/icons/skills/red_05.jpg',
       changes: [
@@ -3410,7 +3787,7 @@ export default class EffectDefinitions {
 
   get _heavilyEncumbered() {
     return new Effect({
-      name: 'Heavily Encumbered',
+      name: '重載',
       description:
         'Lowers movement by 20 ft., disadvantage on all attack rolls, and disadvantage on strength, dexterity, and constitution saves',
       icon: 'icons/svg/downgrade.svg',
@@ -3419,7 +3796,7 @@ export default class EffectDefinitions {
           key: 'data.attributes.movement.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '-20',
-          priority: 25,
+          priority: 5,
         },
         {
           key: 'flags.midi-qol.disadvantage.attack.all',
@@ -3447,7 +3824,7 @@ export default class EffectDefinitions {
 
   get _inspiration() {
     return new Effect({
-      name: 'Inspiration',
+      name: '激勵骰',
       description:
         'Advantage on everything and expires after any action, save, check, or skill roll',
       icon: 'icons/magic/control/buff-luck-fortune-green.webp',
@@ -3488,7 +3865,7 @@ export default class EffectDefinitions {
 
   get _reaction() {
     return new Effect({
-      name: 'Reaction',
+      name: '反應',
       description: 'No active effects and expires on turn start',
       icon: 'modules/dfreds-convenient-effects/images/reaction.svg',
       flags: {
@@ -3501,7 +3878,7 @@ export default class EffectDefinitions {
 
   get _ready() {
     return new Effect({
-      name: 'Ready',
+      name: '準備',
       description: 'No active effects and expires on turn start',
       icon: 'modules/dfreds-convenient-effects/images/ready.svg',
       flags: {
@@ -3514,7 +3891,7 @@ export default class EffectDefinitions {
 
   get _sharpshooter() {
     return new Effect({
-      name: 'Sharpshooter',
+      name: '神射手',
       description:
         'Subtracts 5 from ranged attacks but adds 10 to ranged damage',
       icon: 'systems/dnd5e/icons/skills/green_01.jpg',
