@@ -12,17 +12,20 @@ export default class DynamicEffectsAdder {
    */
   async addDynamicEffects(effect, actor) {
     switch (effect.name.toLowerCase()) {
-      case 'divine word':
+      case '聖言術':
         this._addDivineWordEffects(effect, actor);
         break;
-      case 'enlarge':
+      case '變巨':
         this._addEnlargeEffects(effect, actor);
         break;
-      case 'rage':
+      case '狂暴':
         this._addRageEffects(effect, actor);
         break;
-      case 'reduce':
+      case '縮小':
         this._addReduceEffects(effect, actor);
+        break;
+      case '暮光聖域':
+        this._addTwilightShroudEffects(effect, actor);
         break;
     }
   }
@@ -116,6 +119,7 @@ export default class DynamicEffectsAdder {
 
     this._determineRageBonusDamage(effect, barbarianClass);
     this._addResistancesIfTotemWarrior(effect, barbarianClass);
+    this._addDamageIfZealot(effect, barbarianClass);
     this._determineIfPersistantRage(effect, barbarianClass);
   }
 
@@ -197,9 +201,67 @@ export default class DynamicEffectsAdder {
     }
   }
 
+  _addDamageIfZealot(effect, barbarianClass) {
+    if (
+      barbarianClass.data.data.subclass?.identifier ===
+      'path-of-the-zealot'
+    ) {
+      effect.changes.push(
+        ...[
+          {
+            key: 'flags.midi-qol.optional.NAME.damage.mwak',
+            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+            value: '+1d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
+          },
+          {
+            key: 'flags.midi-qol.optional.NAME.damage.rwak',
+            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+            value: '+1d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
+          },
+          {
+            key: 'flags.midi-qol.optional.NAME.criticalDamage',
+            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+            value: '+2d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
+          },
+          {
+            key: 'flags.midi-qol.optional.NAME.count',
+            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+            value: 'turn',
+          },
+          {
+            key: 'flags.midi-qol.optional.NAME.label',
+            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+            value: '神性狂怒',
+          },
+        ]
+      );
+    }
+  }
+
   _determineIfPersistantRage(effect, barbarianClass) {
     if (barbarianClass.data.data.levels > 14) {
       effect.seconds = undefined;
     }
   }
+
+  _addTwilightShroudEffects(effect, actor) {
+    const clericClass = actor.data.items.find(
+      (item) => item.type === 'class' && item.name === 'Cleric'
+    );
+
+    if (!clericClass) {
+      ui.notifications.warn('Selected actor is not a Cleric');
+      return;
+    }
+
+    if (clericClass.data.data.levels > 16) {
+      effect.changes.push({
+          key: 'macro.CE',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '半掩蔽',
+          priority: '20',
+      });
+    }
+  }
+
 }
