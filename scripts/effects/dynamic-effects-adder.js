@@ -191,7 +191,7 @@ export default class DynamicEffectsAdder {
     const isZealot =
       barbarianClass.subclass?.identifier === 'path-of-the-zealot';
 
-    if (isZealott) {
+    if (isZealot) {
       effect.changes.push(
         ...[
           {
@@ -203,11 +203,6 @@ export default class DynamicEffectsAdder {
             key: 'flags.midi-qol.optional.NAME.damage.rwak',
             mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
             value: '+1d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
-          },
-          {
-            key: 'flags.midi-qol.optional.NAME.criticalDamage',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: '+2d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
           },
           {
             key: 'flags.midi-qol.optional.NAME.count',
