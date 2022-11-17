@@ -171,8 +171,9 @@ export default class EffectDefinitions {
       this._protectionFromEnergyLightning,
       this._protectionFromEnergyThunder,
       this._protectionFromPoison,
-
       this._protectionFromEvilAndGood,
+
+      this._raulothimPsychicLance,
       this._rayOfFrost,
       this._regenerate,
       this._resilientSphere,
@@ -268,7 +269,7 @@ export default class EffectDefinitions {
   /* Condition Effects */
   get _blinded() {
     return new Effect({
-      name: 'Blinded',
+      name: '目盲',
       description:
         '一個目盲的生物無法看見，且在任何需要視覺的屬性檢定中自動失敗。對目盲生物進行的攻擊檢定具有優勢，且目盲生物的攻擊檢定具有劣勢。',
       icon: 'modules/dfreds-convenient-effects/images/blinded.svg',
@@ -289,7 +290,7 @@ export default class EffectDefinitions {
 
   get _charmed() {
     return new Effect({
-      name: 'Charmed',
+      name: '魅惑',
       description:
         '一個被魅惑的生物不能攻擊魅惑者、或以魅惑者作為有害能力或魔法效果的目標。魅惑者在對被魅惑的生物社交互動時所進行的所有屬性檢定具有優勢。',
       icon: 'modules/dfreds-convenient-effects/images/charmed.svg',
@@ -298,7 +299,7 @@ export default class EffectDefinitions {
 
   get _concentrating() {
     return new Effect({
-      name: 'Concentrating',
+      name: '專注',
       description:
       '有些法術會需要你維持專注以讓它的魔法效果持續作用。若你的專注中斷，則這類法術也將隨之結束。',
       icon: 'modules/dfreds-convenient-effects/images/concentrating.svg',
@@ -307,7 +308,7 @@ export default class EffectDefinitions {
 
   get _dead() {
     return new Effect({
-      name: 'Dead',
+      name: '死亡',
       description: '你死了。',
       icon: 'icons/svg/skull.svg',
     });
@@ -315,7 +316,7 @@ export default class EffectDefinitions {
 
   get _deafened() {
     return new Effect({
-      name: 'Deafened',
+      name: '耳聾',
       description:
         "一個耳聾的生物無法聽見聲音，且在任何需要聽力的屬性檢定中自動失敗。",
       icon: 'modules/dfreds-convenient-effects/images/deafened.svg',
@@ -324,7 +325,7 @@ export default class EffectDefinitions {
 
   get _exhaustion1() {
     return new Effect({
-      name: 'Exhaustion 1',
+      name: '力竭 1',
       description: '所有屬性檢定具有劣勢。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion1.svg',
       changes: [
@@ -344,7 +345,7 @@ export default class EffectDefinitions {
 
   get _exhaustion2() {
     return new Effect({
-      name: 'Exhaustion 2',
+      name: '力竭 2',
       description: '移動速度減半。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion2.svg',
       changes: [
@@ -370,7 +371,7 @@ export default class EffectDefinitions {
 
   get _exhaustion3() {
     return new Effect({
-      name: 'Exhaustion 3',
+      name: '力竭 3',
       description:
         '所有攻擊檢定和豁免檢定具有劣勢。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion3.svg',
@@ -407,7 +408,7 @@ export default class EffectDefinitions {
 
   get _exhaustion4() {
     return new Effect({
-      name: 'Exhaustion 4',
+      name: '力竭 4',
       description:
         '最大生命值減半。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion4.svg',
@@ -450,7 +451,7 @@ export default class EffectDefinitions {
 
   get _exhaustion5() {
     return new Effect({
-      name: 'Exhaustion 5',
+      name: '力竭 5',
       description:
         '移動速度歸零。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion5.svg',
@@ -493,7 +494,7 @@ export default class EffectDefinitions {
 
   get _frightened() {
     return new Effect({
-      name: 'Frightened',
+      name: '恐懼',
       description:
         '當恐懼的來源在視線可及的範圍時，被恐懼的生物在屬性檢定和攻擊檢定上具有劣勢。生物不能自願地移近它恐懼的來源。',
       icon: 'modules/dfreds-convenient-effects/images/frightened.svg',
@@ -514,7 +515,7 @@ export default class EffectDefinitions {
 
   get _grappled() {
     return new Effect({
-      name: 'Grappled',
+      name: '被擒',
       description:
         '一個被擒生物的移動速度歸0，且不能受益於任何對它移動速度的加值。',
       icon: 'modules/dfreds-convenient-effects/images/grappled.svg',
@@ -531,7 +532,7 @@ export default class EffectDefinitions {
 
   get _incapacitated() {
     return new Effect({
-      name: 'Incapacitated',
+      name: '無力',
       description:
         '一個無力的生物不能採取任何動作或反應。',
       icon: 'modules/dfreds-convenient-effects/images/incapacitated.svg',
@@ -540,7 +541,7 @@ export default class EffectDefinitions {
 
   get _invisible() {
     return new Effect({
-      name: 'Invisible',
+      name: '隱形',
       description:
         '在要進行躲藏時，該生物被視作重度遮蔽。對隱形生物進行的攻擊檢定具有劣勢，且隱形生物的攻擊檢定具有優勢。',
       icon: 'modules/dfreds-convenient-effects/images/invisible.svg',
@@ -561,7 +562,7 @@ export default class EffectDefinitions {
 
   get _paralyzed() {
     return new Effect({
-      name: 'Paralyzed',
+      name: '麻痺',
       description:
         '一個被麻痺的生物處於無力，且不能移動或說話。該生物的力量和敏捷豁免自動失敗。對該生物進行的攻擊檢定具有優勢。若攻擊者距離該生物5呎以內，則任何其命中該生物的攻擊都視為重擊。',
       icon: 'modules/dfreds-convenient-effects/images/paralyzed.svg',
@@ -598,7 +599,7 @@ export default class EffectDefinitions {
 
   get _petrified() {
     return new Effect({
-      name: 'Petrified',
+      name: '石化',
       description:'變成石雕。',
       icon: 'modules/dfreds-convenient-effects/images/petrified.svg',
       changes: [
@@ -644,7 +645,7 @@ export default class EffectDefinitions {
 
   get _poisoned() {
     return new Effect({
-      name: 'Poisoned',
+      name: '中毒',
       description:'一個中毒的生物在攻擊檢定與屬性檢定上具有劣勢。',
       icon: 'modules/dfreds-convenient-effects/images/poisoned.svg',
       changes: [
@@ -664,10 +665,15 @@ export default class EffectDefinitions {
 
   get _prone() {
     return new Effect({
-      name: 'Prone',
+      name: '伏地',
       description:
         '一個伏地的生物唯一的移動方式是爬行，該生物在攻擊檢定上具有劣勢。如果攻擊者距離該生物5呎以內，則對該生物進行的攻擊檢定將具有優勢。除此之外，對該生物的攻擊檢定具有劣勢。',
       icon: 'modules/dfreds-convenient-effects/images/prone.svg',
+      flags: {
+        dae: {
+          stackable: 'noneName',
+        },
+      },
       changes: [
         {
           key: 'flags.midi-qol.grants.advantage.attack.mwak',
@@ -706,7 +712,7 @@ export default class EffectDefinitions {
 
   get _restrained() {
     return new Effect({
-      name: 'Restrained',
+      name: '束縛',
       description:
         '一個被束縛生物的移動速度歸0，且不能受益於任何對它移動速度的加值。對該生物進行的攻擊檢定具有優勢，且該生物的攻擊檢定和敏捷豁免具有劣勢。',
       icon: 'modules/dfreds-convenient-effects/images/restrained.svg',
@@ -738,7 +744,7 @@ export default class EffectDefinitions {
 
   get _stunned() {
     return new Effect({
-      name: 'Stunned',
+      name: '震懾',
       description:
         '一個被震懾的生物處於無力，不能移動，力量和敏捷豁免自動失敗。對該生物進行的攻擊檢定具有優勢。',
       icon: 'modules/dfreds-convenient-effects/images/stunned.svg',
@@ -764,7 +770,7 @@ export default class EffectDefinitions {
 
   get _unconscious() {
     return new Effect({
-      name: 'Unconscious',
+      name: '昏迷',
       description:
         '毫無防備的狀態。',
       icon: 'icons/svg/unconscious.svg',
@@ -2071,6 +2077,11 @@ export default class EffectDefinitions {
           mode: CONST.ACTIVE_EFFECT_MODES.ADD,
           value: 'frightened',
         },
+        {
+          key: 'flags.midi-qol.OverTime',
+          mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE,
+          value: 'turn=end,damageRoll=@attributes.spelldc-8-@prof-@bonuses.spell.dc,damageType=temphp,label=英雄氣概',
+        },
       ],
     });
   }
@@ -2079,7 +2090,7 @@ export default class EffectDefinitions {
     return new Effect({
       name: "脆弱詛咒",
       description: 'No active effects and lasts until removed (for now)',
-      icon: 'systems/dnd5e/icons/skills/violet_20.jpg',
+      icon: 'icons/magic/control/voodoo-doll-pain-damage-tan.webp',
     });
   }
 
@@ -2546,6 +2557,16 @@ export default class EffectDefinitions {
       description: 'No active effects and lasts for 10 minutes',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-blue-yellow.webp',
       seconds: Constants.SECONDS.IN_TEN_MINUTES,
+    });
+  }
+
+  get _raulothimPsychicLance() {
+    return new Effect({
+      name: '勞洛希姆心靈騎槍',
+      description: 'Incapacitated until the start of your next turn.',
+      icon: 'icons/weapons/polearms/spear-flared-silver-pink.webp',
+      seconds: CONFIG.time.roundTime,
+      changes: [...this._incapacitated.changes]
     });
   }
 

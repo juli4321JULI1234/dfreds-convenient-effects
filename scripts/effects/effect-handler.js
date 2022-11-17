@@ -107,11 +107,11 @@ export default class EffectHandler {
 
     const actor = this._foundryHelpers.getActorByUuid(uuid);
 
-    if (effect.name.startsWith('Exhaustion')) {
+    if (effect.name.startsWith('力竭')) {
       await this._removeAllExhaustionEffects(uuid);
     }
 
-    if (effect.name == 'Unconscious') {
+    if (effect.name == '昏迷') {
       activeEffectsToApply.push(this._getProneEffect());
     }
 
@@ -135,7 +135,7 @@ export default class EffectHandler {
 
   _getProneEffect() {
     let proneActiveEffectData =
-      game.dfreds.effectInterface.findEffectByName('Prone');
+      game.dfreds.effectInterface.findEffectByName('伏地');
     return proneActiveEffectData.convertToActiveEffectData({
       origin,
       overlay: false,
@@ -145,10 +145,10 @@ export default class EffectHandler {
   }
 
   async _removeAllExhaustionEffects(uuid) {
-    await this.removeEffect({ effectName: 'Exhaustion 1', uuid });
-    await this.removeEffect({ effectName: 'Exhaustion 2', uuid });
-    await this.removeEffect({ effectName: 'Exhaustion 3', uuid });
-    await this.removeEffect({ effectName: 'Exhaustion 4', uuid });
-    await this.removeEffect({ effectName: 'Exhaustion 5', uuid });
+    await this.removeEffect({ effectName: '力竭 1', uuid });
+    await this.removeEffect({ effectName: '力竭 2', uuid });
+    await this.removeEffect({ effectName: '力竭 3', uuid });
+    await this.removeEffect({ effectName: '力竭 4', uuid });
+    await this.removeEffect({ effectName: '力竭 5', uuid });
   }
 }
