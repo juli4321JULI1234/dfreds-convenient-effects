@@ -138,6 +138,7 @@ export default class EffectDefinitions {
       this._frostbite,
 
       this._gaseousForm,
+      this._giftOfAlacrity,
       this._globeOfInvulnerability,
       this._greaterInvisibility,
       this._guidance,
@@ -1898,6 +1899,22 @@ export default class EffectDefinitions {
           key: 'macro.tokenMagic',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: 'Fairy Outline',
+        },
+      ],
+    });
+  }
+
+  get _giftOfAlacrity() {
+    return new Effect({
+      name: '靈敏之賜',
+      description: 'Initiative plus 1d8 for 8 hour',
+      icon: 'icons/skills/movement/figure-running-gray.webp',
+      seconds: Constants.SECONDS.IN_EIGHT_HOURS,
+      changes: [
+        {
+          key: 'system.attributes.init.bonus',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: '+1d8',
         },
       ],
     });
