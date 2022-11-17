@@ -90,6 +90,8 @@ export default class EffectDefinitions {
       this._blindnessDeafnessBlindness,
       this._blindnessDeafnessDeafness,
       this._blur,
+
+      this._causeFear,
       this._charmPerson,
       this._command,
       this._comprehendLanguages,
@@ -102,6 +104,7 @@ export default class EffectDefinitions {
       this._contagionSeizure,
       this._contagionSlimyDoom,
 
+      this._daylight,
       this._darkvision,
       this._disguiseSelf,
       this._divineFavor,
