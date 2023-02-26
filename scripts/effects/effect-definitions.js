@@ -85,6 +85,7 @@ export default class EffectDefinitions {
       this._barkskin,
       this._beaconOfHope,
       this._blackTentacles,
+      this._bladeWard,
       this._bless,
       this._blindnessDeafness,
       this._blindnessDeafnessBlindness,
@@ -330,6 +331,11 @@ export default class EffectDefinitions {
       icon: 'modules/dfreds-convenient-effects/images/exhaustion1.svg',
       changes: [
         {
+          key: 'system.attributes.exhaustion',
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '1',
+        },
+        {
           key: 'flags.midi-qol.disadvantage.ability.check.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
           value: '1',
@@ -349,6 +355,11 @@ export default class EffectDefinitions {
       description: '移動速度減半。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion2.svg',
       changes: [
+        {
+          key: 'system.attributes.exhaustion',
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '2',
+        },
         {
           key: 'flags.midi-qol.disadvantage.ability.check.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
@@ -376,6 +387,11 @@ export default class EffectDefinitions {
         '所有攻擊檢定和豁免檢定具有劣勢。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion3.svg',
       changes: [
+        {
+          key: 'system.attributes.exhaustion',
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '3',
+        },
         {
           key: 'flags.midi-qol.disadvantage.ability.check.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
@@ -413,6 +429,11 @@ export default class EffectDefinitions {
         '最大生命值減半。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion4.svg',
       changes: [
+        {
+          key: 'system.attributes.exhaustion',
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '4',
+        },
         {
           key: 'flags.midi-qol.disadvantage.ability.check.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
@@ -456,6 +477,11 @@ export default class EffectDefinitions {
         '移動速度歸零。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion5.svg',
       changes: [
+        {
+          key: 'system.attributes.exhaustion',
+          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+          value: '5',
+        },
         {
           key: 'flags.midi-qol.disadvantage.ability.check.all',
           mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
@@ -931,6 +957,37 @@ export default class EffectDefinitions {
       icon: 'icons/magic/nature/vines-thorned-curled-glow-teal-purple.webp',
       seconds: Constants.SECONDS.IN_ONE_MINUTE,
       changes: [...this._restrained.changes],
+    });
+  }
+
+  get _bladeWard() {
+    return new Effect({
+      name: '劍刃防護',
+      description: 'Resistance against bludgeoning, piercing, and slashing damage dealt by weapon attacks until next round end',
+      icon: 'icons/magic/defensive/barrier-shield-dome-deflect-blue.webp',
+      seconds: 7,
+      flags: {
+        dae: {
+          specialDuration: ['turnEndSource'],
+        },
+      },
+      changes: [
+        {
+          key: 'system.traits.dr.value',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: 'slashing',
+        },
+        {
+          key: 'system.traits.dr.value',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: 'piercing',
+        },
+        {
+          key: 'system.traits.dr.value',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: 'bludgeoning',
+        },
+      ],
     });
   }
 
