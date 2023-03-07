@@ -13,7 +13,7 @@ export default class StatusEffects {
   /**
    * Initialize the token status effects based on the user configured settings.
    */
-  initializeStatusEffects() {
+  initialize() {
     const modifyStatusEffects = this._settings.modifyStatusEffects;
 
     if (modifyStatusEffects === 'replace') {
@@ -47,14 +47,19 @@ export default class StatusEffects {
       .map((name) => {
         const effect = this._customEffectsHandler
           .getCustomEffects()
-          .find((effect) => effect.name == name);
+          .find((effect) => effect.label == name);
 
         if (effect) return effect;
 
-        return game.dfreds.effects.all.find((effect) => effect.name == name);
+        return game.dfreds.effects.all.find((effect) => effect.label == name);
       })
       .filter((effect) => effect)
-      .map((effect) => effect.convertToActiveEffectData());
+      .map((effect) => {
+        return {
+          id: `Convenient Effect: ${effect.label}`,
+          ...effect,
+        };
+      });
   }
 
   /**

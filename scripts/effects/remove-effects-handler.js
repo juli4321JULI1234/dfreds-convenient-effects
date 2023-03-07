@@ -1,4 +1,5 @@
 import FoundryHelpers from '../foundry-helpers.js';
+import { isConvenient } from './effect-helpers.js';
 
 /**
  * Handles the removal of specific effects via a dialog
@@ -31,15 +32,15 @@ export default class RemoveEffectsHandler {
   get _effectsByActorMappings() {
     return canvas.tokens.controlled
       .filter((token) => {
-        const effects = token.actor.effects.filter(
-          (effect) => effect?.flags?.isConvenient
+        const effects = token.actor.effects.filter((activeEffect) =>
+          isConvenient(activeEffect)
         );
         return effects.length > 0;
       })
       .map((token) => {
         const actor = token.actor;
-        const effects = token.actor.effects.filter(
-          (effect) => effect?.flags?.isConvenient
+        const effects = token.actor.effects.filter((activeEffect) =>
+          isConvenient(activeEffect)
         );
 
         return { actor, effects };
@@ -55,7 +56,7 @@ export default class RemoveEffectsHandler {
 
   async _getDialog(resolve, _reject) {
     const content = await renderTemplate(
-      'modules/dfreds-convenient-effects/templates/remove-effects-dialog.html',
+      'modules/dfreds-convenient-effects/templates/remove-effects-dialog.hbs',
       { effectsByActorMappings: this._effectsByActorMappings }
     );
     return new Dialog(

@@ -1,3 +1,4 @@
+import Constants from './constants.js';
 import Settings from './settings.js';
 
 /**
@@ -12,14 +13,17 @@ export default class HandlebarHelpers {
    * Registers the handlebar helpers
    */
   registerHelpers() {
+    this._registerIncHelper();
     this._registerIsGmHelper();
     this._registerCanCreateEffectsHelper();
     this._registerIfCustomFolderHelper();
-    this._registerHasNestedEffectsHelper();
-    this._registerIsStatusEffectHelper();
-    this._registerHasMidiQoLChangesHelper();
-    this._registerHasAtlChangesHelper();
-    this._registerHasTokenMagicChangesHelper();
+    this._registerConvenientIconsHelper();
+  }
+
+  _registerIncHelper() {
+    Handlebars.registerHelper('inc', (value) => {
+      return parseInt(value) + 1;
+    });
   }
 
   _registerIsGmHelper() {
@@ -42,54 +46,77 @@ export default class HandlebarHelpers {
 
   _registerHasNestedEffectsHelper() {
     Handlebars.registerHelper('hasNestedEffects', (effect) => {
-      return effect.nestedEffects.length > 0;
+      const nestedEffectNames =
+        effect.getFlag(Constants.MODULE_ID, Constants.FLAGS.NESTED_EFFECTS) ??
+        [];
+
+      return nestedEffectNames.length > 0;
     });
   }
 
-  _registerIsStatusEffectHelper() {
-    Handlebars.registerHelper('isStatusEffect', (effect) => {
-      return (
-        this._settings.modifyStatusEffects !== 'none' &&
-        this._settings.isStatusEffect(effect.name)
+  _registerConvenientIconsHelper() {
+    Handlebars.registerHelper('convenientIcons', (effect) => {
+      let icons = '';
+
+      const nestedEffectNames =
+        effect.getFlag(Constants.MODULE_ID, Constants.FLAGS.NESTED_EFFECTS) ??
+        [];
+
+      const nestedEffects = nestedEffectNames.map((nestedEffect) =>
+        game.dfreds.effectInterface.findEffectByName(nestedEffect)
       );
+
+      const subChanges = nestedEffects.flatMap(
+        (nestedEffect) => nestedEffect.changes
+      );
+
+      const allChanges = [...effect.changes, ...subChanges];
+
+      icons += this._getStatusEffectIcon(effect);
+      icons += this._getNestedEffectsIcon(nestedEffects);
+      icons += this._getMidiIcon(allChanges);
+      icons += this._getWireIcon(allChanges);
+      icons += this._getAtlIcon(allChanges);
+      icons += this._getTokenMagicIcon(allChanges);
+
+      return icons;
     });
   }
 
-  _registerHasMidiQoLChangesHelper() {
-    Handlebars.registerHelper('hasMidiQoLChanges', (effect) => {
-      const anyNestedHaveMidiChanges = effect.nestedEffects
-        .flatMap((nestedEffect) => nestedEffect.changes)
-        .some((change) => change.key.startsWith('flags.midi-qol'));
-
-      const effectHasMidiQoLChanges = effect.changes.some((change) =>
-        change.key.startsWith('flags.midi-qol')
-      );
-
-      return effectHasMidiQoLChanges || anyNestedHaveMidiChanges;
-    });
+  _getStatusEffectIcon(effect) {
+    return this._settings.modifyStatusEffects !== 'none' &&
+      this._settings.isStatusEffect(effect.label)
+      ? "<i class='fas fa-street-view integration-icon' title='Token Status Effect'></i>"
+      : '';
   }
 
-  _registerHasAtlChangesHelper() {
-    Handlebars.registerHelper('hasAtlChanges', (effect) => {
-      const anyNestedHaveAtlChanges = effect.nestedEffects.some(
-        (effect) => effect.atlChanges.length > 0
-      );
-      return (
-        this._settings.integrateWithAte &&
-        (effect.atlChanges.length > 0 || anyNestedHaveAtlChanges)
-      );
-    });
+  _getNestedEffectsIcon(nestedEffects) {
+    return nestedEffects.length > 0
+      ? "<i class='fas fa-tree integration-icon' title='Nested Effects'></i> "
+      : '';
   }
 
-  _registerHasTokenMagicChangesHelper() {
-    Handlebars.registerHelper('hasTokenMagicChanges', (effect) => {
-      const anyNestedHaveTokenMagicChanges = effect.nestedEffects.some(
-        (effect) => effect.tokenMagicChanges.length > 0
-      );
-      return (
-        this._settings.integrateWithTokenMagic &&
-        (effect.tokenMagicChanges.length > 0 || anyNestedHaveTokenMagicChanges)
-      );
-    });
+  _getMidiIcon(changes) {
+    return changes.some((change) => change.key.startsWith('flags.midi-qol'))
+      ? "<i class='fas fa-dice-d20 integration-icon' title='Midi-QoL Effects'></i> "
+      : '';
+  }
+
+  _getWireIcon(changes) {
+    return changes.some((change) => change.key.startsWith('flags.wire'))
+      ? "<i class='fas fa-plug integration-icon' title='Wire Effects'></i> "
+      : '';
+  }
+
+  _getAtlIcon(changes) {
+    return changes.some((change) => change.key.startsWith('ATL'))
+      ? "<i class='fas fa-lightbulb integration-icon' title='ATL Effects'></i> "
+      : '';
+  }
+
+  _getTokenMagicIcon(changes) {
+    return changes.some((change) => change.key.startsWith('macro.tokenMagic'))
+      ? "<i class='fas fa-magic integration-icon' title='Token Magic Effects'></i> "
+      : '';
   }
 }

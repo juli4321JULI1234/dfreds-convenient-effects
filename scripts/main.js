@@ -1,7 +1,6 @@
 import ChatHandler from './chat-handler.js';
 import Constants from './constants.js';
 import Controls from './controls.js';
-import CustomEffectsHandler from './effects/custom-effects-handler.js';
 import EffectDefinitions from './effects/effect-definitions.js';
 import EffectInterface from './effect-interface.js';
 import FoundryHelpers from './foundry-helpers.js';
@@ -10,6 +9,10 @@ import MacroHandler from './macro-handler.js';
 import Settings from './settings.js';
 import StatusEffects from './status-effects.js';
 import { libWrapper } from './lib/shim.js';
+import TextEnrichers from './text-enrichers.js';
+import { addDescriptionToEffectConfig } from './ui/add-description-to-effect-config.js';
+import { addNestedEffectsToEffectConfig } from './ui/add-nested-effects-to-effect-config.js';
+import { isConvenient } from './effects/effect-helpers.js';
 
 /**
  * Initialize the settings and handlebar helpers
@@ -17,6 +20,7 @@ import { libWrapper } from './lib/shim.js';
 Hooks.once('init', () => {
   new Settings().registerSettings();
   new HandlebarHelpers().registerHelpers();
+  new TextEnrichers().initialize();
 });
 
 /**
@@ -36,9 +40,23 @@ Hooks.once('socketlib.ready', () => {
  * Handle initializing the status and custom effects
  */
 Hooks.once('ready', async () => {
-  const customEffectsHandler = new CustomEffectsHandler();
-  await customEffectsHandler.deleteInvalidEffects();
-  game.dfreds.statusEffects.initializeStatusEffects();
+  const settings = new Settings();
+
+  if (!settings.customEffectsItemId) {
+    const item = await CONFIG.Item.documentClass.create({
+      name: 'Custom Convenient Effects',
+      img: 'modules/dfreds-convenient-effects/images/magic-palm.svg',
+      type: 'consumable',
+    });
+
+    await settings.setCustomEffectsItemId(item.id);
+  }
+
+  Hooks.callAll(`${Constants.MODULE_ID}.initialize`);
+});
+
+Hooks.once(`${Constants.MODULE_ID}.initialize`, async () => {
+  game.dfreds.statusEffects.initialize();
 
   Hooks.callAll(`${Constants.MODULE_ID}.ready`);
 });
@@ -84,12 +102,15 @@ Hooks.once('setup', () => {
   );
 });
 
-Hooks.on('renderItemDirectory', (_itemDirectory, html, _data) => {
+Hooks.on('changeSidebarTab', (directory) => {
+  if (!(directory instanceof ItemDirectory)) return;
+
   const settings = new Settings();
   const customEffectsItemId = settings.customEffectsItemId;
 
   if (!customEffectsItemId) return;
 
+  const html = directory.element;
   const li = html.find(`li[data-document-id="${customEffectsItemId}"]`);
   li.remove();
 });
@@ -105,10 +126,7 @@ Hooks.on('getSceneControlButtons', (controls) => {
  * Handle creating a chat message if an effect is added
  */
 Hooks.on('preCreateActiveEffect', (activeEffect, _config, _userId) => {
-  if (
-    !activeEffect?.flags?.isConvenient ||
-    !(activeEffect?.parent instanceof Actor)
-  )
+  if (!isConvenient(activeEffect) || !(activeEffect?.parent instanceof Actor))
     return;
 
   const chatHandler = new ChatHandler();
@@ -121,27 +139,14 @@ Hooks.on('preCreateActiveEffect', (activeEffect, _config, _userId) => {
 });
 
 /**
- * Handle adding any actor data changes when an active effect is added to an actor
+ * Handle when an active effect is created
  */
 Hooks.on('createActiveEffect', (activeEffect, _config, _userId) => {
   const settings = new Settings();
   if (activeEffect.parent.id == settings.customEffectsItemId) {
+    // Re-render the app if open and a new effect is added to the custom item
     const foundryHelpers = new FoundryHelpers();
     foundryHelpers.renderConvenientEffectsAppIfOpen();
-  }
-
-  if (
-    !activeEffect?.flags?.isConvenient ||
-    !(activeEffect?.parent instanceof Actor)
-  )
-    return;
-
-  if (activeEffect?.flags?.requiresActorUpdate) {
-    game.dfreds.effectInterface.addActorDataChanges(
-      activeEffect?.label,
-      activeEffect?.parent?.uuid,
-      activeEffect?.origin
-    );
   }
 });
 
@@ -160,10 +165,7 @@ Hooks.on('updateActiveEffect', (activeEffect, _config, _userId) => {
  * Handle creating a chat message if an effect has expired or was removed
  */
 Hooks.on('preDeleteActiveEffect', (activeEffect, _config, _userId) => {
-  if (
-    !activeEffect?.flags?.isConvenient ||
-    !(activeEffect?.parent instanceof Actor)
-  )
+  if (!isConvenient(activeEffect) || !(activeEffect?.parent instanceof Actor))
     return;
 
   const isExpired =
@@ -189,43 +191,49 @@ Hooks.on('deleteActiveEffect', (activeEffect, _config, _userId) => {
     foundryHelpers.renderConvenientEffectsAppIfOpen();
   }
 
-  if (
-    !activeEffect?.flags?.isConvenient ||
-    !(activeEffect?.parent instanceof Actor)
-  )
+  if (!isConvenient(activeEffect) || !(activeEffect?.parent instanceof Actor)) {
     return;
+  }
 
-  if (activeEffect?.flags?.requiresActorUpdate) {
-    game.dfreds.effectInterface.removeActorDataChanges(
-      activeEffect?.label,
-      activeEffect?.parent?.uuid
-    );
+  // Remove effects that were added due to this effect
+  const actor = activeEffect.parent;
+  const effectIdsFromThisEffect = actor.effects
+    .filter(
+      (effect) => effect.origin === `Convenient Effect: ${activeEffect.label}`
+    )
+    .map((effect) => effect.id);
+
+  if (effectIdsFromThisEffect) {
+    actor.deleteEmbeddedDocuments('ActiveEffect', effectIdsFromThisEffect);
   }
 });
 
 /**
- * Handle adding a form item for effect description to custom effects
+ * Handle changing the rendered active effect config
  */
-Hooks.on('renderActiveEffectConfig', (activeEffectConfig, html, _data) => {
-  if (!activeEffectConfig?.object?.flags?.isCustomConvenient) return;
+Hooks.on(
+  'renderActiveEffectConfig',
+  async (activeEffectConfig, $html, _data) => {
+    addDescriptionToEffectConfig(activeEffectConfig, $html);
 
-  const labelFormGroup = html
-    .find('section[data-tab="details"] .form-group')
-    .first();
+    const settings = new Settings();
 
-  const description =
-    activeEffectConfig.object.flags.convenientDescription ??
-    'Applies custom effects';
-  labelFormGroup.after(
-    `<div class="form-group"><label>Effect Description</label><div class="form-fields"><input type="text" name="flags.convenientDescription" value="${description}"></div></div>`
-  );
-});
+    // Only add nested effects if the effect exists on the custom effect item
+    if (activeEffectConfig.object.parent.id != settings.customEffectsItemId)
+      return;
+    addNestedEffectsToEffectConfig(activeEffectConfig, $html);
+  }
+);
 
 /**
  * Handle re-rendering the ConvenientEffectsApp if it is open and a custom convenient active effect sheet is closed
  */
 Hooks.on('closeActiveEffectConfig', (activeEffectConfig, _html) => {
-  if (!activeEffectConfig?.object?.flags?.isCustomConvenient) return;
+  const settings = new Settings();
+
+  // Only re-render if the effect exists on the custom effect
+  if (activeEffectConfig.object.parent.id != settings.customEffectsItemId)
+    return;
 
   const foundryHelpers = new FoundryHelpers();
   foundryHelpers.renderConvenientEffectsAppIfOpen();
@@ -250,7 +258,7 @@ Hooks.on('dropActorSheetData', (actor, _actorSheetCharacter, data) => {
   const effect = game.dfreds.effectInterface.findEffectByName(data.effectName);
 
   // core will handle the drop since we are not using a nested effect
-  if (!effect.nestedEffects.length) return;
+  if (!game.dfreds.effectInterface.hasNestedEffects(effect)) return;
 
   game.dfreds.effectInterface.addEffect({
     effectName: data.effectName,

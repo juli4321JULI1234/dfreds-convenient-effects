@@ -1,3 +1,4 @@
+import { getDescription } from './effects/effect-helpers.js';
 import Settings from './settings.js';
 
 /**
@@ -56,7 +57,7 @@ export default class ChatHandler {
   }
 
   _getChatContent({ effect, reason, actorName, isCreateActiveEffect }) {
-    let message = `<p><strong>${effect.name}</strong> - ${reason} ${actorName}</p>`;
+    let message = `<p><strong>${effect.label}</strong> - ${reason} ${actorName}</p>`;
     if (
       this._settings.showChatMessageEffectDescription === 'onAddOrRemove' ||
       (this._settings.showChatMessageEffectDescription === 'onAddOnly' &&
@@ -69,12 +70,11 @@ export default class ChatHandler {
   }
 
   _getDescription(effect) {
-    if (effect.description) {
-      return effect.description;
-    } else if (effect.flags.convenientDescription) {
-      return effect.flags.convenientDescription;
+    const description = getDescription(effect);
+    if (description) {
+      return description;
     } else {
-      return 'Applies custom effects';
+      return 'No description';
     }
   }
 }

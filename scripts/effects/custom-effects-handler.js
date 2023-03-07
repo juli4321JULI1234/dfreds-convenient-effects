@@ -1,7 +1,7 @@
-import Effect from './effect.js';
 import Settings from '../settings.js';
 import log from '../logger.js';
 import FoundryHelpers from '../foundry-helpers.js';
+import { createActiveEffect } from './effect-helpers.js';
 
 /**
  * Handles initializing, creating, editing, and deleting custom effects.
@@ -26,23 +26,20 @@ export default class CustomEffectsHandler {
   /**
    * Gets all custom effects
    *
-   * @returns {Effect[]} the list of custom effects defined on the custom item
+   * @returns {ActiveEffect[]} the list of custom effects defined on the custom item
    */
   getCustomEffects() {
     const item = this._findCustomEffectsItem();
     if (!item) return [];
 
-    let customEffects = item.effects
-      .filter((effect) => this._isValid(effect))
-      .map((effect) => this._convertToEffectClass(effect));
-
+    let customEffects = Array(...item.effects);
     customEffects.sort((a, b) => {
-      let nameA = a.name.toUpperCase(); // ignore upper and lowercase
-      let nameB = b.name.toUpperCase(); // ignore upper and lowercase
-      if (nameA < nameB) {
+      let labelA = a.label.toUpperCase(); // ignore upper and lowercase
+      let labelB = b.label.toUpperCase(); // ignore upper and lowercase
+      if (labelA < labelB) {
         return -1;
       }
-      if (nameA > nameB) {
+      if (labelA > labelB) {
         return 1;
       }
 
@@ -54,72 +51,19 @@ export default class CustomEffectsHandler {
   }
 
   /**
-   * Deletes invalid custom effects
-   *
-   * @returns {Promise} resolves when all invalid effects are deleted
-   */
-  deleteInvalidEffects() {
-    const item = this._findCustomEffectsItem();
-    if (!item) return;
-
-    const invalidCustomEffectIds = item.effects
-      .filter((effect) => !this._isValid(effect))
-      .map((effect) => effect.id);
-
-    return item.deleteEmbeddedDocuments('ActiveEffect', invalidCustomEffectIds);
-  }
-
-  _isValid(effect) {
-    return effect.flags?.isCustomConvenient;
-  }
-
-  _convertToEffectClass(effect) {
-    const atlChanges = effect.changes.filter((changes) =>
-      changes.key.startsWith('ATL')
-    );
-    const tokenMagicChanges = effect.changes.filter(
-      (changes) => changes.key === 'macro.tokenMagic'
-    );
-    const changes = effect.changes.filter(
-      (change) =>
-        !change.key.startsWith('ATL') && change.key !== 'macro.tokenMagic'
-    );
-
-    return new Effect({
-      customId: effect.id,
-      name: effect.label,
-      description: effect.flags.convenientDescription,
-      icon: effect.icon,
-      tint: effect.tint,
-      seconds: effect.duration.seconds,
-      rounds: effect.duration.rounds,
-      turns: effect.duration.turns,
-      flags: effect.flags,
-      changes,
-      atlChanges,
-      tokenMagicChanges,
-    });
-  }
-
-  /**
    * Creates a new custom effect on the custom effect item and renders its sheet
    */
   async createNewCustomEffect() {
     const item = await this._findOrCreateCustomEffectsItem();
+    const newEffect = createActiveEffect({
+      label: 'New Effect',
+      origin: item.uuid,
+    });
+
     const effects = await item.createEmbeddedDocuments('ActiveEffect', [
-      {
-        label: game.i18n.localize('DND5E.EffectNew'),
-        icon: 'icons/svg/aura.svg',
-        origin: item.uuid,
-        'duration.rounds': undefined,
-        disabled: false,
-        flags: {
-          isCustomConvenient: true,
-          convenientDescription: 'Applies custom effects',
-        },
-        transfer: false,
-      },
+      newEffect,
     ]);
+
     effects[0].sheet.render(true);
   }
 
@@ -133,24 +77,10 @@ export default class CustomEffectsHandler {
   async createNewCustomEffectsWith({ activeEffects }) {
     const item = await this._findOrCreateCustomEffectsItem();
     const customEffects = activeEffects.map((activeEffect) => {
-      const flags = activeEffect?.flags ?? {};
-      flags.isCustomConvenient = true;
-      activeEffect.flags = flags;
-
       if (!activeEffect.origin) {
         activeEffect.origin = item.uuid;
       }
-
-      return {
-        changes: activeEffect.changes,
-        duration: activeEffect.duration,
-        flags: flags,
-        icon: activeEffect.icon,
-        label: activeEffect.label,
-        origin: activeEffect.origin,
-        tint: activeEffect.tint,
-        transfer: activeEffect.transfer,
-      };
+      return createActiveEffect({ ...activeEffect });
     });
     return item.createEmbeddedDocuments('ActiveEffect', customEffects);
   }
@@ -158,12 +88,12 @@ export default class CustomEffectsHandler {
   /**
    * Opens the configuration sheet for the custom effect corresponding with the custom ID
    *
-   * @param {Effect} effect - the effect to edit
+   * @param {ActiveEffect} effect - the effect to edit
    */
   async editCustomEffect(effect) {
     const item = await this._findCustomEffectsItem();
     const activeEffect = item.effects.find(
-      (activeEffect) => activeEffect.id === effect.customId
+      (activeEffect) => activeEffect.id === effect.id
     );
     activeEffect.sheet.render(true);
   }
@@ -171,44 +101,25 @@ export default class CustomEffectsHandler {
   /**
    * Deletes the custom effect corresponding with the custom ID
    *
-   * @param {Effect} effect - the effect to delete
+   * @param {ActiveEffect} effect - the effect to delete
    * @returns {Promise} resolves when the active effect is deleted
    */
   async deleteCustomEffect(effect) {
     const item = await this._findCustomEffectsItem();
-    return item.deleteEmbeddedDocuments('ActiveEffect', [effect.customId]);
+    return item.deleteEmbeddedDocuments('ActiveEffect', [effect.id]);
   }
 
   /**
    * Duplicates an exisiting effect
    *
-   * @param {Effect} effect - the effect to duplicate
+   * @param {ActiveEffect} effect - the effect to duplicate
    */
   async duplicateExistingEffect(effect) {
     const item = await this._findOrCreateCustomEffectsItem();
     const effects = await item.createEmbeddedDocuments('ActiveEffect', [
-      {
-        label: effect.name,
-        icon: effect.icon,
-        tint: effect.tint,
-        duration: {
-          seconds: effect.seconds,
-          rounds: effect.rounds,
-          turns: effect.turns,
-        },
-        flags: foundry.utils.mergeObject(effect.flags, {
-          isCustomConvenient: true,
-          convenientDescription: effect.description,
-        }),
-        origin: item.uuid,
-        changes: [
-          ...effect.changes,
-          ...effect.atlChanges,
-          ...effect.tokenMagicChanges,
-        ],
-        transfer: false,
-      },
+      effect,
     ]);
+
     effects[0].sheet.render(true);
   }
 
