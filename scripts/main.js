@@ -12,7 +12,7 @@ import { libWrapper } from './lib/shim.js';
 import TextEnrichers from './text-enrichers.js';
 import { addDescriptionToEffectConfig } from './ui/add-description-to-effect-config.js';
 import { addNestedEffectsToEffectConfig } from './ui/add-nested-effects-to-effect-config.js';
-import { isConvenient } from './effects/effect-helpers.js';
+import EffectHelpers from './effects/effect-helpers.js';
 
 /**
  * Initialize the settings and handlebar helpers
@@ -24,7 +24,7 @@ Hooks.once('init', () => {
 });
 
 /**
- * Handle initializing the API when socket lib is ready
+ * Handle setting up the API when socket lib is ready
  */
 Hooks.once('socketlib.ready', () => {
   game.dfreds = game.dfreds || {};
@@ -32,12 +32,10 @@ Hooks.once('socketlib.ready', () => {
   game.dfreds.effects = new EffectDefinitions();
   game.dfreds.effectInterface = new EffectInterface();
   game.dfreds.statusEffects = new StatusEffects();
-
-  game.dfreds.effectInterface.initialize();
 });
 
 /**
- * Handle initializing the status and custom effects
+ * Handle creating the custom effects ID on ready
  */
 Hooks.once('ready', async () => {
   const settings = new Settings();
@@ -55,7 +53,12 @@ Hooks.once('ready', async () => {
   Hooks.callAll(`${Constants.MODULE_ID}.initialize`);
 });
 
+/**
+ * Handle initializing everything
+ */
 Hooks.once(`${Constants.MODULE_ID}.initialize`, async () => {
+  game.dfreds.effectInterface.initialize();
+  game.dfreds.effects.initialize();
   game.dfreds.statusEffects.initialize();
 
   Hooks.callAll(`${Constants.MODULE_ID}.ready`);
@@ -126,7 +129,11 @@ Hooks.on('getSceneControlButtons', (controls) => {
  * Handle creating a chat message if an effect is added
  */
 Hooks.on('preCreateActiveEffect', (activeEffect, _config, _userId) => {
-  if (!isConvenient(activeEffect) || !(activeEffect?.parent instanceof Actor))
+  const effectHelpers = new EffectHelpers();
+  if (
+    !effectHelpers.isConvenient(activeEffect) ||
+    !(activeEffect?.parent instanceof Actor)
+  )
     return;
 
   const chatHandler = new ChatHandler();
@@ -165,7 +172,11 @@ Hooks.on('updateActiveEffect', (activeEffect, _config, _userId) => {
  * Handle creating a chat message if an effect has expired or was removed
  */
 Hooks.on('preDeleteActiveEffect', (activeEffect, _config, _userId) => {
-  if (!isConvenient(activeEffect) || !(activeEffect?.parent instanceof Actor))
+  const effectHelpers = new EffectHelpers();
+  if (
+    !effectHelpers.isConvenient(activeEffect) ||
+    !(activeEffect?.parent instanceof Actor)
+  )
     return;
 
   const isExpired =
@@ -191,7 +202,11 @@ Hooks.on('deleteActiveEffect', (activeEffect, _config, _userId) => {
     foundryHelpers.renderConvenientEffectsAppIfOpen();
   }
 
-  if (!isConvenient(activeEffect) || !(activeEffect?.parent instanceof Actor)) {
+  const effectHelpers = new EffectHelpers();
+  if (
+    !effectHelpers.isConvenient(activeEffect) ||
+    !(activeEffect?.parent instanceof Actor)
+  ) {
     return;
   }
 

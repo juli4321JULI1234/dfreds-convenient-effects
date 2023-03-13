@@ -1,14 +1,14 @@
 import Constants from '../constants.js';
-import Settings from '../settings.js';
 import CustomEffectsHandler from './custom-effects-handler.js';
-import { createActiveEffect } from './effect-helpers.js';
-
+import EffectHelpers from './effect-helpers.js';
+import Settings from '../settings.js';
 /**
  * Defines all of the effect definitions
  */
 export default class EffectDefinitions {
   constructor() {
     this._customEffectsHandler = new CustomEffectsHandler();
+    this._effectHelpers = new EffectHelpers();
     this._settings = new Settings();
 
     this._flagPrefix = 'midi-qol';
@@ -17,20 +17,30 @@ export default class EffectDefinitions {
     }
   }
 
+  initialize() {
+    this._conditions = this.conditions;
+    this._spells = this.spells;
+    this._classFeatures = this.classFeatures;
+    this._equipment = this.equipment;
+    this._other = this.other;
+
+    this._all = [
+      ...this._conditions,
+      ...this._spells,
+      ...this._classFeatures,
+      ...this._equipment,
+      ...this._other,
+    ];
+  }
+
   /**
    * Get all effects
    *
    * @returns {ActiveEffect[]} all the effects
    */
   get all() {
-    return [
-      ...this.conditions,
-      ...this.customEffects,
-      ...this.spells,
-      ...this.classFeatures,
-      ...this.equipment,
-      ...this.other,
-    ];
+    const customEffects = this._customEffectsHandler.getCustomEffects();
+    return [...customEffects, ...this._all];
   }
 
   /**
@@ -39,30 +49,32 @@ export default class EffectDefinitions {
    * @returns {ActiveEffect[]} all the condition effects
    */
   get conditions() {
-    return [
-      this._blinded,
-      this._charmed,
-      this._concentrating,
-      this._dead,
-      this._deafened,
-      this._exhaustion1,
-      this._exhaustion2,
-      this._exhaustion3,
-      this._exhaustion4,
-      this._exhaustion5,
-      this._frightened,
-      this._grappled,
-      this._incapacitated,
-      this._invisible,
-      this._paralyzed,
-      this._petrified,
-      this._poisoned,
-      this._prone,
-      this._restrained,
-      this._stunned,
-      this._unconscious,
-      this._wounded,
-    ];
+    return (
+      this._conditions ?? [
+        this._blinded,
+        this._charmed,
+        this._concentrating,
+        this._dead,
+        this._deafened,
+        this._exhaustion1,
+        this._exhaustion2,
+        this._exhaustion3,
+        this._exhaustion4,
+        this._exhaustion5,
+        this._frightened,
+        this._grappled,
+        this._incapacitated,
+        this._invisible,
+        this._paralyzed,
+        this._petrified,
+        this._poisoned,
+        this._prone,
+        this._restrained,
+        this._stunned,
+        this._unconscious,
+        this._wounded,
+      ]
+    );
   }
 
   /**
@@ -80,136 +92,138 @@ export default class EffectDefinitions {
    * @returns {ActiveEffect[]} all the spell effects
    */
   get spells() {
-    return [
-      this._acidArrow, 
-      this._aid,
-      this._vitriolicSphere,
-      this._alterSelf,
-      this._antilifeShell,
-      this._arcaneHand,
-      
-      this._bane,
-      this._barkskin,
-      this._beaconOfHope,
-      this._blackTentacles,
-      this._bladeWard,
-      this._bless,
-      this._blindnessDeafness,
-      this._blindnessDeafnessBlindness,
-      this._blindnessDeafnessDeafness,
-      this._blur,
-      
-      this._causeFear,
-      this._charmPerson,
-      this._command,
-      this._comprehendLanguages,
+    return (
+      this._spells ?? [
+        this._acidArrow, 
+        this._aid,
+        this._vitriolicSphere,
+        this._alterSelf,
+        this._antilifeShell,
+        this._arcaneHand,
+        
+        this._bane,
+        this._barkskin,
+        this._beaconOfHope,
+        this._blackTentacles,
+        this._bladeWard,
+        this._bless,
+        this._blindnessDeafness,
+        this._blindnessDeafnessBlindness,
+        this._blindnessDeafnessDeafness,
+        this._blur,
+        
+        this._causeFear,
+        this._charmPerson,
+        this._command,
+        this._comprehendLanguages,
 
-      this._contagion,
-      this._contagionBlindingSickness,
-      this._contagionFilthFever,
-      this._contagionFleshRot,
-      this._contagionMindfire,
-      this._contagionSeizure,
-      this._contagionSlimyDoom,
+        this._contagion,
+        this._contagionBlindingSickness,
+        this._contagionFilthFever,
+        this._contagionFleshRot,
+        this._contagionMindfire,
+        this._contagionSeizure,
+        this._contagionSlimyDoom,
 
-      this._darkvision,
-      this._daylight,
-      this._disguiseSelf,
-      this._divineFavor,
-      this._divineWord,
+        this._darkvision,
+        this._daylight,
+        this._disguiseSelf,
+        this._divineFavor,
+        this._divineWord,
 
-      this._enlargeReduce,
-      this._enlargeReduceEnlarge,
-      this._enlargeReduceReduce,
+        this._enlargeReduce,
+        this._enlargeReduceEnlarge,
+        this._enlargeReduceReduce,
 
-      this._enhanceAbility,
-      this._enhanceAbilityBearsEndurance,
-      this._enhanceAbilityBullsStrength,
-      this._enhanceAbilityCatsGrace,
-      this._enhanceAbilityEaglesSplendor,
-      this._enhanceAbilityFoxsCunning,
-      this._enhanceAbilityOwlsWisdom,
+        this._enhanceAbility,
+        this._enhanceAbilityBearsEndurance,
+        this._enhanceAbilityBullsStrength,
+        this._enhanceAbilityCatsGrace,
+        this._enhanceAbilityEaglesSplendor,
+        this._enhanceAbilityFoxsCunning,
+        this._enhanceAbilityOwlsWisdom,
 
-      this._faerieFire,
-      this._falseLife, // TODO figure out higher level casting
-      this._featherFall,
-      this._feeblemind,
+        this._faerieFire,
+        this._falseLife, // TODO figure out higher level casting
+        this._featherFall,
+        this._feeblemind,
 
-      this._fireShield,
-      this._fireShieldColdResistance,
-      this._fireShieldFireResistance,
+        this._fireShield,
+        this._fireShieldColdResistance,
+        this._fireShieldFireResistance,
 
-      this._findThePath,
-      this._fly,
-      this._foresight,
-      this._freedomOfMovement,
-      this._frostbite,
+        this._findThePath,
+        this._fly,
+        this._foresight,
+        this._freedomOfMovement,
+        this._frostbite,
 
-      this._gaseousForm,
-      this._giftOfAlacrity,
-      this._globeOfInvulnerability,
-      this._greaterInvisibility,
-      this._guidance,
-      this._guidingBolt,
-      this._haste,
-      this._heroesFeast,
-      this._heroism,
-      this._hex,
-      this._hideousLaughter,
-      this._holdMonster,
-      this._holdPerson,
-      this._holyAura,
-      this._huntersMark,
-      this._hypnoticPattern,
+        this._gaseousForm,
+        this._giftOfAlacrity,
+        this._globeOfInvulnerability,
+        this._greaterInvisibility,
+        this._guidance,
+        this._guidingBolt,
+        this._haste,
+        this._heroesFeast,
+        this._heroism,
+        this._hex,
+        this._hideousLaughter,
+        this._holdMonster,
+        this._holdPerson,
+        this._holyAura,
+        this._huntersMark,
+        this._hypnoticPattern,
 
-      this._invisibility,
-      this._irresistibleDance,
-      this._jump,
-      this._light,
-      this._longstrider,
+        this._invisibility,
+        this._irresistibleDance,
+        this._jump,
+        this._light,
+        this._longstrider,
 
-      this._mageArmor,
-      this._mindBlank,
-      this._mirrorImage,
-      this._passWithoutTrace,
+        this._mageArmor,
+        this._mindBlank,
+        this._mirrorImage,
+        this._passWithoutTrace,
 
-      this._protectionFromEnergy,
-      this._protectionFromEnergyAcid,
-      this._protectionFromEnergyCold,
-      this._protectionFromEnergyFire,
-      this._protectionFromEnergyLightning,
-      this._protectionFromEnergyThunder,
-      this._protectionFromPoison,
-      this._protectionFromEvilAndGood,
+        this._protectionFromEnergy,
+        this._protectionFromEnergyAcid,
+        this._protectionFromEnergyCold,
+        this._protectionFromEnergyFire,
+        this._protectionFromEnergyLightning,
+        this._protectionFromEnergyThunder,
+        this._protectionFromPoison,
+        this._protectionFromEvilAndGood,
 
-      this._raulothimPsychicLance,
-      this._rayOfFrost,
-      this._regenerate,
-      this._resilientSphere,
-      this._resistance,
-      this._rimeBindingIce,
+        this._raulothimPsychicLance,
+        this._rayOfFrost,
+        this._regenerate,
+        this._resilientSphere,
+        this._resistance,
+        this._rimeBindingIce,
 
-      this._sanctuary,
-      this._shield,
-      this._shieldOfFaith,
-      this._slow,
-      this._speakWithAnimals,
-      this._speakWithDead,
-      this._speakWithPlants,
-      this._spiderClimb,
-      this._spiritGuardians,
-      this._spiritualWeapon,
-      this._stoneskin,
-      this._suggestion,
+        this._sanctuary,
+        this._shield,
+        this._shieldOfFaith,
+        this._slow,
+        this._speakWithAnimals,
+        this._speakWithDead,
+        this._speakWithPlants,
+        this._spiderClimb,
+        this._spiritGuardians,
+        this._spiritualWeapon,
+        this._stoneskin,
+        this._suggestion,
 
-      this._telekinesis,
-      this._trueStrike,
-      this._viciousMockery,
+        this._telekinesis,
+        this._trueStrike,
+        this._viciousMockery,
 
-      this._wardingBond,
-      this._waterBreathing,
-      this._waterWalk,
-    ];
+        this._wardingBond,
+        this._waterBreathing,
+        this._waterWalk,
+      ]
+    );
   }
 
   /**
@@ -218,24 +232,26 @@ export default class EffectDefinitions {
    * @returns {ActiveEffect[]} all the class feature effects
    */
   get classFeatures() {
-    return [
-      this._bardicInspiration,
-      this._bardicInspirationD6,
-      this._bardicInspirationD8,
-      this._bardicInspirationD10,
-      this._bardicInspirationD12,
-      this._channelDivinitySacredWeapon,
-      this._channelDivinityTurnTheUnholy,
-      this._channelDivinityTurnUndead,
-      this._eyesofNight,
-      this._kiEmptyBody,
-      this._kiPatientDefense,
-      this._steadyAim,
-      this._stunningStrike,
-      this._twilightSanctuary,
-      this._rage,
-      this._recklessAttack,
-    ];
+    return (
+      this._classFeatures ?? [
+        this._bardicInspiration,
+        this._bardicInspirationD6,
+        this._bardicInspirationD8,
+        this._bardicInspirationD10,
+        this._bardicInspirationD12,
+        this._channelDivinitySacredWeapon,
+        this._channelDivinityTurnTheUnholy,
+        this._channelDivinityTurnUndead,
+        this._eyesofNight,
+        this._kiEmptyBody,
+        this._kiPatientDefense,
+        this._steadyAim,
+        this._stunningStrike,
+        this._twilightSanctuary,
+        this._rage,
+        this._recklessAttack,
+      ]
+    );
   }
 
   /**
@@ -244,13 +260,15 @@ export default class EffectDefinitions {
    * @returns {ActiveEffect[]} all the equipment effects
    */
   get equipment() {
-    return [
-      this._bullseyeLantern,
-      this._candle,
-      this._hoodedLantern,
-      this._lantern,
-      this._torch,
-    ];
+    return (
+      this._equipment ?? [
+        this._bullseyeLantern,
+        this._candle,
+        this._hoodedLantern,
+        this._lantern,
+        this._torch,
+      ]
+    );
   }
 
   /**
@@ -259,27 +277,29 @@ export default class EffectDefinitions {
    * @returns {ActiveEffect[]} all the other effects
    */
   get other() {
-    return [
-      this._bonusAction,
-      this._coverHalf,
-      this._coverThreeQuarters,
-      this._encumbered,
-      this._dodge,
-      this._flanked,
-      this._flanking,
-      this._greatWeaponMaster,
-      this._heavilyEncumbered,
-      this._inspiration,
-      this._rangedDisadvantage,
-      this._reaction,
-      this._ready,
-      this._sharpshooter,
-    ];
+    return (
+      this._other ?? [
+        this._bonusAction,
+        this._coverHalf,
+        this._coverThreeQuarters,
+        this._encumbered,
+        this._dodge,
+        this._flanked,
+        this._flanking,
+        this._greatWeaponMaster,
+        this._heavilyEncumbered,
+        this._inspiration,
+        this._rangedDisadvantage,
+        this._reaction,
+        this._ready,
+        this._sharpshooter,
+      ]
+    );
   }
 
   /* Condition Effects */
   get _blinded() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '目盲',
       description:
       '一個目盲的生物無法看見，且在任何需要視覺的屬性檢定中自動失敗。對目盲生物進行的攻擊檢定具有優勢，且目盲生物的攻擊檢定具有劣勢。',
@@ -300,7 +320,7 @@ export default class EffectDefinitions {
   }
 
   get _charmed() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '魅惑',
       description:
         '一個被魅惑的生物不能攻擊魅惑者、或以魅惑者作為有害能力或魔法效果的目標。魅惑者在對被魅惑的生物社交互動時所進行的所有屬性檢定具有優勢。',
@@ -309,7 +329,7 @@ export default class EffectDefinitions {
   }
 
   get _concentrating() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '專注',
       description:
         '有些法術會需要你維持專注以讓它的魔法效果持續作用。若你的專注中斷，則這類法術也將隨之結束。',
@@ -318,7 +338,7 @@ export default class EffectDefinitions {
   }
 
   get _dead() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '死亡',
       description: '你死了。',
       icon: 'icons/svg/skull.svg',
@@ -326,7 +346,7 @@ export default class EffectDefinitions {
   }
 
   get _deafened() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '耳聾',
       description:
         "一個耳聾的生物無法聽見聲音，且在任何需要聽力的屬性檢定中自動失敗。",
@@ -335,7 +355,7 @@ export default class EffectDefinitions {
   }
 
   get _exhaustion1() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '力竭 1',
       description: '所有屬性檢定具有劣勢。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion1.svg',
@@ -360,7 +380,7 @@ export default class EffectDefinitions {
   }
 
   get _exhaustion2() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '力竭 2',
       description: '移動速度減半。',
       icon: 'modules/dfreds-convenient-effects/images/exhaustion2.svg',
@@ -391,7 +411,7 @@ export default class EffectDefinitions {
   }
 
   get _exhaustion3() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '力竭 3',
       description:
         '所有攻擊檢定和豁免檢定具有劣勢。',
@@ -433,7 +453,7 @@ export default class EffectDefinitions {
   }
 
   get _exhaustion4() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '力竭 4',
       description:
         '最大生命值減半。',
@@ -481,7 +501,7 @@ export default class EffectDefinitions {
   }
 
   get _exhaustion5() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '力竭 5',
       description:
         '移動速度歸零。',
@@ -529,7 +549,7 @@ export default class EffectDefinitions {
   }
 
   get _frightened() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '恐懼',
       description:
         "當恐懼的來源在視線可及的範圍時，被恐懼的生物在屬性檢定和攻擊檢定上具有劣勢。生物不能自願地移近它恐懼的來源。",
@@ -550,7 +570,7 @@ export default class EffectDefinitions {
   }
 
   get _grappled() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '被擒',
       description:
         "一個被擒生物的移動速度歸0，且不能受益於任何對它移動速度的加值。",
@@ -567,7 +587,7 @@ export default class EffectDefinitions {
   }
 
   get _incapacitated() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '無力',
       description:
         "一個無力的生物不能採取任何動作或反應。",
@@ -576,7 +596,7 @@ export default class EffectDefinitions {
   }
 
   get _invisible() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '隱形',
       description:
         "在要進行躲藏時，該生物被視作重度遮蔽。對隱形生物進行的攻擊檢定具有劣勢，且隱形生物的攻擊檢定具有優勢。",
@@ -597,7 +617,7 @@ export default class EffectDefinitions {
   }
 
   get _paralyzed() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '麻痺',
       description:
         "一個被麻痺的生物處於無力，且不能移動或說話。該生物的力量和敏捷豁免自動失敗。對該生物進行的攻擊檢定具有優勢。若攻擊者距離該生物5呎以內，則任何其命中該生物的攻擊都視為重擊。",
@@ -634,7 +654,7 @@ export default class EffectDefinitions {
   }
 
   get _petrified() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '石化',
       description:
         "變成石雕",
@@ -681,7 +701,7 @@ export default class EffectDefinitions {
   }
 
   get _poisoned() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '中毒',
       description:
         '一個中毒的生物在攻擊檢定與屬性檢定上具有劣勢。',
@@ -702,7 +722,7 @@ export default class EffectDefinitions {
   }
 
   get _prone() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '伏地',
       description:
         "一個伏地的生物唯一的移動方式是爬行，該生物在攻擊檢定上具有劣勢。如果攻擊者距離該生物5呎以內，則對該生物進行的攻擊檢定將具有優勢。除此之外，對該生物的攻擊檢定具有劣勢。",
@@ -749,7 +769,7 @@ export default class EffectDefinitions {
   }
 
   get _restrained() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '束縛',
       description:
         '一個被束縛生物的移動速度歸0，且不能受益於任何對它移動速度的加值。對該生物進行的攻擊檢定具有優勢，且該生物的攻擊檢定和敏捷豁免具有劣勢。',
@@ -781,7 +801,7 @@ export default class EffectDefinitions {
   }
 
   get _stunned() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '震懾',
       description:
         "一個被震懾的生物處於無力，不能移動，力量和敏捷豁免自動失敗。對該生物進行的攻擊檢定具有優勢。",
@@ -807,7 +827,7 @@ export default class EffectDefinitions {
   }
 
   get _unconscious() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '昏迷',
       description:
         "毫無防備的狀態。",
@@ -817,7 +837,7 @@ export default class EffectDefinitions {
   }
 
   get _wounded() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: 'Wounded',
       description: 'No active effects',
       icon: 'modules/dfreds-convenient-effects/images/wounded.svg',
@@ -826,7 +846,7 @@ export default class EffectDefinitions {
 
   /* Spell Effects */
   get _acidArrow() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '馬友夫強酸箭',
       description: 'Causes 2d4 acid damage at the end of next turn',
       icon: 'icons/magic/acid/projectile-bolts-salvo-green.webp',
@@ -842,7 +862,7 @@ export default class EffectDefinitions {
   }
 
   get _vitriolicSphere() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '硫酸法球',
       description: 'Causes 5d4 acid damage at the end of next turn',
       icon: 'icons/magic/acid/projectile-faceted-glob.webp',
@@ -858,7 +878,7 @@ export default class EffectDefinitions {
   }
 
   get _aid() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '援助術',
       description: 'Add to current and maximum hit points for 8 hours',
       icon: 'icons/magic/life/heart-cross-blue.webp',
@@ -867,7 +887,7 @@ export default class EffectDefinitions {
   }
 
   get _alterSelf() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '變造自身',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/magic/control/debuff-energy-hold-green.webp',
@@ -876,7 +896,7 @@ export default class EffectDefinitions {
   }
 
   get _antilifeShell() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '反活物護罩',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-teal.webp',
@@ -885,7 +905,7 @@ export default class EffectDefinitions {
   }
 
   get _arcaneHand() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: 'Arcane Hand',
       description: 'No active effects and lasts for 1 minute',
       icon: 'icons/magic/fire/projectile-fireball-smoke-strong-teal.webp',
@@ -894,7 +914,7 @@ export default class EffectDefinitions {
   }
 
   get _bane() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '災禍術',
       description:
         'Subtract 1d4 from all saving throws and attack rolls for 1 minute',
@@ -932,7 +952,7 @@ export default class EffectDefinitions {
 
   get _barkskin() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '樹膚術',
       description: 'Upgrade AC to 16 for 1 hour',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-orange.webp',
@@ -949,7 +969,7 @@ export default class EffectDefinitions {
   }
 
   get _beaconOfHope() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '希望信標',
       description:
         'Adds advantage to wisdom saving throws and death saving throws for 1 minute',
@@ -976,7 +996,7 @@ export default class EffectDefinitions {
   }
 
   get _blackTentacles() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '艾伐黑觸手',
       description: 'Apply the effects of the restrained condition for 1 minute',
       icon: 'icons/magic/nature/vines-thorned-curled-glow-teal-purple.webp',
@@ -986,7 +1006,7 @@ export default class EffectDefinitions {
   }
 
   get _bladeWard() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '劍刃防護',
       description: 'Resistance against bludgeoning, piercing, and slashing damage dealt by weapon attacks until next round end',
       icon: 'icons/magic/defensive/barrier-shield-dome-deflect-blue.webp',
@@ -1017,7 +1037,7 @@ export default class EffectDefinitions {
   }
 
   get _bless() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '祝福術',
       description: 'Add 1d4 to all saving throws and attack rolls for 1 minute',
       icon: 'icons/magic/control/buff-flight-wings-blue.webp',
@@ -1060,7 +1080,7 @@ export default class EffectDefinitions {
   }
 
   get _blindnessDeafness() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '目盲/耳聾術',
       description: 'Choose between blindness or deafness',
       icon: 'icons/magic/perception/eye-ringed-glow-angry-red.webp',
@@ -1072,7 +1092,7 @@ export default class EffectDefinitions {
   }
 
   get _blindnessDeafnessBlindness() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '目盲',
       description:
         'Disadvantage on attack rolls while granting advantage to all who attack for 1 minute',
@@ -1084,7 +1104,7 @@ export default class EffectDefinitions {
   }
 
   get _blindnessDeafnessDeafness() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '耳聾',
       description: 'No active effects and lasts for 1 minute',
       icon: 'icons/magic/perception/eye-ringed-glow-angry-red.webp',
@@ -1095,7 +1115,7 @@ export default class EffectDefinitions {
   }
 
   get _blur() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '朦朧術',
       description: 'Grants disadvantage to all who attack for 1 minute',
       icon: 'icons/magic/air/air-burst-spiral-blue-gray.webp',
@@ -1118,7 +1138,7 @@ export default class EffectDefinitions {
   }
 
   get _causeFear() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '造成恐懼',
       description: 'Fear lasts for 1 minute',
       icon: 'icons/magic/death/skeleton-worn-skull-tan.webp',
@@ -1128,7 +1148,7 @@ export default class EffectDefinitions {
   }
 
   get _charmPerson() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '魅惑人類',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/magic/fire/explosion-fireball-medium-purple-pink.webp',
@@ -1138,7 +1158,7 @@ export default class EffectDefinitions {
   }
 
   get _command() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '命令術',
       description: 'No active effects and lasts until the end of next turn',
       icon: 'icons/magic/fire/explosion-fireball-small-purple.webp',
@@ -1148,7 +1168,7 @@ export default class EffectDefinitions {
   }
 
   get _comprehendLanguages() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '通曉語言',
       description: 'Adds all languages for 1 hour',
       icon: 'icons/magic/symbols/runes-triangle-orange-purple.webp',
@@ -1164,7 +1184,7 @@ export default class EffectDefinitions {
   }
 
   get _contagion() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '疫病術',
       description:
         'Choose between blinding sickness, filth fever, flesh rot, mindfire, seizure, or slimy doom',
@@ -1181,7 +1201,7 @@ export default class EffectDefinitions {
   }
 
   get _contagionBlindingSickness() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '失明症',
       description:
         'Disadvantage on wisdom checks and wisdom saving throws for 7 days',
@@ -1205,7 +1225,7 @@ export default class EffectDefinitions {
   }
 
   get _contagionFilthFever() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '穢熱病',
       description:
         'Disadvantage on strength checks strength saving throws, and attacks that use strength for 7 days',
@@ -1233,7 +1253,7 @@ export default class EffectDefinitions {
   }
 
   get _contagionFleshRot() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '血肉潰爛',
       description:
         'Disadvantage on charisma checks and vulnerability to all damage',
@@ -1256,7 +1276,7 @@ export default class EffectDefinitions {
   }
 
   get _contagionMindfire() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '腦熱症',
       description:
         'Disadvantage on intelligence checks and intelligence saving throws for 7 days',
@@ -1279,7 +1299,7 @@ export default class EffectDefinitions {
   }
 
   get _contagionSeizure() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '癲癇',
       description:
         'Disadvantage on dexterity checks, dexterity saving throws, and attacks that use dexterity for 7 days',
@@ -1307,7 +1327,7 @@ export default class EffectDefinitions {
   }
 
   get _contagionSlimyDoom() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '黏濘惡疾',
       description:
         'Disadvantage on constitution checks and constitution saving throws for 7 days',
@@ -1330,7 +1350,7 @@ export default class EffectDefinitions {
   }
 
   get _darkvision() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '黑暗視覺',
       description: 'Upgrade darkvision to 60 ft. for 8 hours',
       icon: 'icons/magic/perception/eye-ringed-glow-angry-small-red.webp',
@@ -1361,7 +1381,7 @@ export default class EffectDefinitions {
   }
 
   get _daylight() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '晝明術',
       description: 'Emits 60/120 light for 1 hour (requires ATL)',
       icon: 'icons/magic/light/explosion-star-blue-yellow.webp',
@@ -1397,7 +1417,7 @@ export default class EffectDefinitions {
   }
 
   get _disguiseSelf() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '易容術',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/magic/control/debuff-energy-hold-teal-blue.webp',
@@ -1406,7 +1426,7 @@ export default class EffectDefinitions {
   }
 
   get _divineFavor() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '神恩術',
       description: 'Add 1d4 radiant damage to weapon attacks for 1 minute',
       icon: 'icons/magic/fire/dagger-rune-enchant-flame-blue-yellow.webp',
@@ -1422,7 +1442,7 @@ export default class EffectDefinitions {
   }
 
   get _divineWord() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '聖言術',
       description: 'Adds various effects based on the remaining hit points',
       icon: 'icons/magic/light/explosion-star-large-orange-purple.webp',
@@ -1431,7 +1451,7 @@ export default class EffectDefinitions {
   }
 
   get _enhanceAbility() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '強化屬性',
       description:
         "Choose between Bear's Endurance, Bull's Strength, Cat's Grace, Eagle's Splendor, Fox's Cunning, or Owl's Wisdom",
@@ -1448,7 +1468,7 @@ export default class EffectDefinitions {
   }
 
   get _enhanceAbilityBearsEndurance() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "熊之堅韌",
       description:
         'Advantage on constitution checks and 2d6 temp hit points for 1 hour',
@@ -1466,7 +1486,7 @@ export default class EffectDefinitions {
   }
 
   get _enhanceAbilityBullsStrength() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "牛之力量",
       description:
         'Advantage on strength checks and double maximum carrying capacity for 1 hour',
@@ -1490,7 +1510,7 @@ export default class EffectDefinitions {
   }
 
   get _enhanceAbilityCatsGrace() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "貓之優雅",
       description: 'Advantage on dexterity checks for 1 hour',
       icon: 'icons/magic/control/buff-flight-wings-runes-purple.webp',
@@ -1507,7 +1527,7 @@ export default class EffectDefinitions {
   }
 
   get _enhanceAbilityEaglesSplendor() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "鷹之威儀",
       description: 'Advantage on charisma checks for 1 hour',
       icon: 'icons/magic/control/buff-flight-wings-runes-purple.webp',
@@ -1524,7 +1544,7 @@ export default class EffectDefinitions {
   }
 
   get _enhanceAbilityFoxsCunning() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "狐之狡黠",
       description: 'Advantage on intelligence checks for 1 hour',
       icon: 'icons/magic/control/buff-flight-wings-runes-purple.webp',
@@ -1541,7 +1561,7 @@ export default class EffectDefinitions {
   }
 
   get _enhanceAbilityOwlsWisdom() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "梟之睿智",
       description: 'Advantage on wisdom checks for 1 hour',
       icon: 'icons/magic/control/buff-flight-wings-runes-purple.webp',
@@ -1558,7 +1578,7 @@ export default class EffectDefinitions {
   }
 
   get _enlargeReduce() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '變巨/縮小術',
       description: 'Choose between Enlarge or Reduce',
       icon: 'icons/magic/control/energy-stream-link-large-blue.webp',
@@ -1570,7 +1590,7 @@ export default class EffectDefinitions {
   }
 
   get _enlargeReduceEnlarge() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '變巨',
       description:
         'Add 1d4 to damage and advantage on strength checks and strength saving throws for 1 minute',
@@ -1599,7 +1619,7 @@ export default class EffectDefinitions {
   }
 
   get _enlargeReduceReduce() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '縮小',
       description:
         'Subtract 1d4 from damage and disadvantage on strength checks and strength saving throws for 1 minute',
@@ -1628,7 +1648,7 @@ export default class EffectDefinitions {
   }
 
   get _faerieFire() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '妖火術',
       description: 'Grants advantage to all who attack for 1 minute',
       icon: 'icons/magic/fire/projectile-meteor-salvo-strong-teal.webp',
@@ -1673,7 +1693,7 @@ export default class EffectDefinitions {
   }
 
   get _falseLife() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '摹造生命',
       description: 'Add temporary hit points 1 hour',
       icon: 'icons/magic/life/heart-cross-purple-orange.webp',
@@ -1682,7 +1702,7 @@ export default class EffectDefinitions {
   }
 
   get _featherFall() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '羽落術',
       description: 'No active effects and lasts for 1 minute',
       icon: 'icons/magic/air/wind-swirl-pink-purple.webp',
@@ -1691,7 +1711,7 @@ export default class EffectDefinitions {
   }
 
   get _feeblemind() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '弱智術',
       description: 'Set intelligence and charisma scores to 1 until removed',
       icon: 'icons/magic/light/explosion-star-large-teal-purple.webp',
@@ -1713,7 +1733,7 @@ export default class EffectDefinitions {
   }
 
   get _fireShield() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '火焰護盾',
       description: 'Choose between cold or fire resistance',
       icon: 'icons/magic/defensive/shield-barrier-flaming-pentagon-red.webp',
@@ -1725,7 +1745,7 @@ export default class EffectDefinitions {
   }
 
   get _fireShieldColdResistance() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '火焰護盾 (寒冰抗性)',
       description: 'Add damage resistance to cold for 10 minutes',
       icon: 'icons/magic/defensive/shield-barrier-flaming-pentagon-red.webp',
@@ -1776,7 +1796,7 @@ export default class EffectDefinitions {
   }
 
   get _fireShieldFireResistance() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '火焰護盾 (火焰抗性)',
       description: 'Add damage resistance to fire for 10 minutes',
       icon: 'icons/magic/defensive/shield-barrier-flaming-pentagon-blue.webp',
@@ -1827,7 +1847,7 @@ export default class EffectDefinitions {
   }
 
   get _findThePath() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '尋找捷徑',
       description: 'No active effects and lasts for 1 day',
       icon: 'icons/magic/light/explosion-star-teal.webp',
@@ -1836,7 +1856,7 @@ export default class EffectDefinitions {
   }
 
   get _fly() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '飛行術',
       description: 'Upgrade flying speed to 60 ft. for 10 minutes',
       icon: 'icons/magic/control/energy-stream-link-white.webp',
@@ -1853,7 +1873,7 @@ export default class EffectDefinitions {
   }
 
   get _foresight() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '預視術',
       description:
         'Grants advantage on attack rolls, ability checks, and saving throws while granting disadvantage to all who attack for 8 hours',
@@ -1890,7 +1910,7 @@ export default class EffectDefinitions {
   }
 
   get _freedomOfMovement() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '行動自如術',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/skills/melee/strike-blade-knife-white-red.webp',
@@ -1899,7 +1919,7 @@ export default class EffectDefinitions {
   }
 
   get _frostbite() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '霜噬',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/magic/water/snowflake-ice-snow-white.webp',
@@ -1926,7 +1946,7 @@ export default class EffectDefinitions {
   }
 
   get _globeOfInvulnerability() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '法術無效結界',
       description: 'No active effects and lasts for 1 minute',
       icon: 'icons/magic/defensive/shield-barrier-flaming-pentagon-blue.webp',
@@ -1942,7 +1962,7 @@ export default class EffectDefinitions {
   }
 
   get _gaseousForm() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '氣化形體',
       description: 'Transform into a misty for 1 hour',
       icon: 'icons/magic/air/wind-swirl-gray-blue.webp',
@@ -1992,7 +2012,7 @@ export default class EffectDefinitions {
   }
 
   get _giftOfAlacrity() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '靈敏之賜',
       description: 'Initiative plus 1d8 for 8 hour',
       icon: 'icons/skills/movement/figure-running-gray.webp',
@@ -2008,7 +2028,7 @@ export default class EffectDefinitions {
   }
 
   get _greaterInvisibility() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '高等隱形術',
       description:
         'Grants advantage on attack rolls while forcing disadvantage to all who attack for 1 minute',
@@ -2038,7 +2058,7 @@ export default class EffectDefinitions {
   }
 
   get _guidance() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '指導術',
       description: 'Adds 1d4 to one ability or skill check for 1 minute',
       icon: 'icons/magic/control/buff-flight-wings-blue.webp',
@@ -2064,7 +2084,7 @@ export default class EffectDefinitions {
   }
 
   get _guidingBolt() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '光導箭',
       description:
         'Grants advantage to next attacker or until the end of next turn',
@@ -2087,7 +2107,7 @@ export default class EffectDefinitions {
   }
 
   get _haste() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '加速術',
       description:
         'Double speed, add 2 to AC, and advantage on dexterity saving throws for 1 minute',
@@ -2115,7 +2135,7 @@ export default class EffectDefinitions {
   }
 
   get _heroesFeast() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "英雄宴",
       description:
         'Immunity to poison and frightened, make all wisdom saving throws with advantage, and hit point maximum increases by 2d10 for 24 hours',
@@ -2142,7 +2162,7 @@ export default class EffectDefinitions {
   }
 
   get _heroism() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '英雄氣概',
       description: 'Immunity to frightened for 1 minute',
       icon: 'icons/magic/life/heart-cross-strong-blue.webp',
@@ -2163,7 +2183,7 @@ export default class EffectDefinitions {
   }
   
   get _hex() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "脆弱詛咒",
       description: 'No active effects and lasts until removed (for now)',
       icon: 'icons/magic/control/voodoo-doll-pain-damage-tan.webp',
@@ -2171,7 +2191,7 @@ export default class EffectDefinitions {
   }
 
   get _hideousLaughter() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '塔莎狂笑術',
       description:
         'Apply the effects of the prone and incapacitated conditions for 1 minute',
@@ -2182,7 +2202,7 @@ export default class EffectDefinitions {
   }
 
   get _holdMonster() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '怪物定身術',
       description: 'Apply the effects of the paralyzed condition for 1 minute',
       icon: 'icons/magic/control/debuff-chains-ropes-red.webp',
@@ -2205,7 +2225,7 @@ export default class EffectDefinitions {
   // saveDC=30,
   // label=Hold Person
   get _holdPerson() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '人類定身術',
       description: 'Apply the effects of the paralyzed condition for 1 minute',
       icon: 'icons/magic/control/debuff-chains-ropes-purple.webp',
@@ -2222,7 +2242,7 @@ export default class EffectDefinitions {
   }
 
   get _holyAura() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '神聖靈光',
       description:
         'Advantage on saving throws, grant disadvantage to all who attack, and emit dim light in 5 radius (requires ATL) for 1 minute',
@@ -2266,7 +2286,7 @@ export default class EffectDefinitions {
   }
 
   get _huntersMark() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "獵人印記",
       description: 'No active effects and lasts until removed (for now)',
       icon: 'icons/magic/perception/eye-ringed-glow-angry-small-red.webp',
@@ -2274,7 +2294,7 @@ export default class EffectDefinitions {
   }
 
   get _hypnoticPattern() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: "催眠圖紋",
       description: 'Becomes charmed, incapacitated, and has a speed of 0.',
       icon: 'icons/magic/control/fear-fright-white.webp',
@@ -2297,7 +2317,7 @@ export default class EffectDefinitions {
   }
 
   get _invisibility() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '隱形術',
       description:
         'Grants advantage on next attack roll while forcing disadvantage to all who attack for 1 hour. Expires after 1 attack.',
@@ -2332,7 +2352,7 @@ export default class EffectDefinitions {
   }
 
   get _irresistibleDance() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '奧圖狂舞術',
       description:
         'Zero movement, disadvantage on dexterity saving throws, disadvantage on attack rolls, and grants advantage to all who attack for 1 minute',
@@ -2365,7 +2385,7 @@ export default class EffectDefinitions {
   }
 
   get _jump() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '跳躍術',
       description: 'No active effects and lasts for 1 minute',
       icon: 'icons/magic/control/debuff-energy-hold-blue-yellow.webp',
@@ -2374,7 +2394,7 @@ export default class EffectDefinitions {
   }
 
   get _light() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '光亮術',
       description: 'Emits 20/40 light for 1 hour (requires ATL)',
       icon: 'icons/magic/light/explosion-star-small-blue-yellow.webp',
@@ -2410,7 +2430,7 @@ export default class EffectDefinitions {
   }
 
   get _longstrider() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '大步奔行',
       description: 'Increase all movement by 10 ft. for 1 hour',
       icon: 'icons/magic/air/wind-stream-blue-gray.webp',
@@ -2427,7 +2447,7 @@ export default class EffectDefinitions {
   }
 
   get _mageArmor() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '法師護甲',
       description: 'Upgrades armor to 13 + dex modifier for 8 hours',
       icon: 'icons/magic/defensive/shield-barrier-glowing-triangle-blue.webp',
@@ -2451,7 +2471,7 @@ export default class EffectDefinitions {
   }
 
   get _mindBlank() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '心靈屏障',
       description: 'Adds immunity to psychic damage for 24 hours',
       icon: 'icons/magic/air/air-burst-spiral-large-blue.webp',
@@ -2472,7 +2492,7 @@ export default class EffectDefinitions {
   }
 
   get _mirrorImage() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: 'Mirror Image',
       description: 'No active effects and lasts for 1 minute',
       icon: 'icons/magic/control/debuff-energy-hold-levitate-pink.webp',
@@ -2489,7 +2509,7 @@ export default class EffectDefinitions {
 
   get _passWithoutTrace() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '行蹤無跡',
       description: 'Add 10 to stealth checks for 1 hour',
       icon: 'icons/magic/air/fog-gas-smoke-brown.webp',
@@ -2505,7 +2525,7 @@ export default class EffectDefinitions {
   }
 
   get _protectionFromEnergy() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '防護能量',
       description:
         'Choose between acid, cold, fire, lightning, or thunder resistance',
@@ -2522,7 +2542,7 @@ export default class EffectDefinitions {
 
   get _protectionFromEnergyAcid() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '防護酸蝕',
       description: 'Adds damage resistance to acid for 1 hour',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-acid.webp',
@@ -2540,7 +2560,7 @@ export default class EffectDefinitions {
 
   get _protectionFromEnergyCold() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '防護寒冷',
       description: 'Adds damage resistance to cold for 1 hour',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-blue.webp',
@@ -2558,7 +2578,7 @@ export default class EffectDefinitions {
 
   get _protectionFromEnergyFire() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '防護火焰',
       description: 'Adds damage resistance to fire for 1 hour',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-red.webp',
@@ -2576,7 +2596,7 @@ export default class EffectDefinitions {
 
   get _protectionFromEnergyLightning() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '防護閃電',
       description: 'Adds damage resistance to lightning for 1 hour',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-blue-yellow.webp',
@@ -2594,7 +2614,7 @@ export default class EffectDefinitions {
 
   get _protectionFromEnergyThunder() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '防護雷鳴',
       description: 'Adds damage resistance to thunder for 1 hour',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-teal-purple.webp',
@@ -2612,7 +2632,7 @@ export default class EffectDefinitions {
 
   get _protectionFromPoison() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '防護毒素',
       description:
         'Adds resistance to poison for 1 hour (does not grant automatic advantage on saving throws against poison)',
@@ -2629,7 +2649,7 @@ export default class EffectDefinitions {
   }
   
   get _protectionFromEvilAndGood() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '防護善惡',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-blue-yellow.webp',
@@ -2638,7 +2658,7 @@ export default class EffectDefinitions {
   }
 
   get _raulothimPsychicLance() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '勞洛希姆心靈騎槍',
       description: 'Incapacitated until the start of your next turn.',
       icon: 'icons/weapons/polearms/spear-flared-silver-pink.webp',
@@ -2648,7 +2668,7 @@ export default class EffectDefinitions {
   }
 
   get _rayOfFrost() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '冷凍射線',
       description: 'Lowers movement by 10 ft',
       icon: 'icons/magic/light/beam-rays-blue-small.webp',
@@ -2665,7 +2685,7 @@ export default class EffectDefinitions {
   }
 
   get _regenerate() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '再生術',
       description: 'Regain 1 hit point at the start of each turn for 1 hour',
       icon: 'icons/magic/life/heart-cross-strong-flame-green.webp',
@@ -2682,7 +2702,7 @@ export default class EffectDefinitions {
   }
 
   get _resilientSphere() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '歐提路克魔封法球',
       description: 'Adds total immunity to all damage and half movement',
       icon: 'icons/magic/light/explosion-star-large-pink.webp',
@@ -2704,7 +2724,7 @@ export default class EffectDefinitions {
   }
 
   get _resistance() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '提升抗力',
       description: 'Add 1d4 to a single saving throw in the next minute',
       icon: 'icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp',
@@ -2725,7 +2745,7 @@ export default class EffectDefinitions {
   }
 
   get _rimeBindingIce() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '萊姆冰封術',
       description: 'Speed down to 0 in the next minute or until one break the frost',
       icon: 'icons/magic/water/projectiles-ice-faceted-shard-salvo-blue.webp',
@@ -2749,7 +2769,7 @@ export default class EffectDefinitions {
   }
 
   get _sanctuary() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '聖域術',
       description: 'Can not be attack in the next minute or until harm to someone',
       icon: 'icons/magic/holy/barrier-shield-winged-cross.webp',
@@ -2770,7 +2790,7 @@ export default class EffectDefinitions {
   }
 
   get _shield() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '護盾術',
       description: 'Add 5 to AC until next turn',
       icon: 'icons/magic/defensive/shield-barrier-glowing-triangle-magenta.webp',
@@ -2799,7 +2819,7 @@ export default class EffectDefinitions {
   }
 
   get _shieldOfFaith() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '虔誠護盾',
       description: 'Adds 2 to the AC for 10 minutes',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-blue-yellow.webp',
@@ -2822,7 +2842,7 @@ export default class EffectDefinitions {
   }
 
   get _slow() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '緩速術',
       description:
         'Halves movement and and subtract 2 from AC and dexterity saving throws for 1 minute',
@@ -2850,7 +2870,7 @@ export default class EffectDefinitions {
   }
 
   get _speakWithAnimals() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '動物交談術',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'icons/magic/nature/wolf-paw-glow-small-teal-blue.webp',
@@ -2859,7 +2879,7 @@ export default class EffectDefinitions {
   }
 
   get _speakWithDead() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '死者交談術',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'icons/magic/control/fear-fright-shadow-monster-green.webp',
@@ -2868,7 +2888,7 @@ export default class EffectDefinitions {
   }
 
   get _speakWithPlants() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '植物交談術',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'icons/magic/nature/leaf-glow-teal.webp',
@@ -2877,7 +2897,7 @@ export default class EffectDefinitions {
   }
 
   get _spiderClimb() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '蛛行術',
       description: 'Grants climbing speed equal to walking speed for 1 hour',
       icon: 'icons/magic/control/debuff-chains-blue.webp',
@@ -2894,7 +2914,7 @@ export default class EffectDefinitions {
   }
 
   get _spiritGuardians() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '靈體守衛',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'icons/magic/light/projectile-bolts-salvo-white.webp',
@@ -2932,7 +2952,7 @@ export default class EffectDefinitions {
   }
 
   get _spiritualWeapon() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: 'Spiritual Weapon',
       description: 'No active effects and lasts for 1 minute',
       icon: 'icons/magic/fire/dagger-rune-enchant-flame-purple.webp',
@@ -2942,7 +2962,7 @@ export default class EffectDefinitions {
 
   get _stoneskin() {
     // TODO token magic effects
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '石膚術',
       description: 'Adds resistance to non-magical physical damage for 1 hour',
       icon: 'icons/magic/defensive/shield-barrier-flaming-diamond-orange.webp',
@@ -2958,7 +2978,7 @@ export default class EffectDefinitions {
   }
 
   get _suggestion() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '暗示術',
       description: 'No active effects and lasts for 8 hours',
       icon: 'icons/magic/air/air-burst-spiral-pink.webp',
@@ -2967,7 +2987,7 @@ export default class EffectDefinitions {
   }
 
   get _telekinesis() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '心靈遙控',
       description: 'No active effects and lasts for 10 minutes',
       icon: 'icons/magic/control/debuff-energy-hold-levitate-yellow.webp',
@@ -2976,7 +2996,7 @@ export default class EffectDefinitions {
   }
 
   get _trueStrike() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '克敵機先',
       description:
         'Grants advantage on next attack or until the end of next turn',
@@ -2999,7 +3019,7 @@ export default class EffectDefinitions {
   }
 
   get _viciousMockery() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '惡毒嘲笑',
       description:
         'Grants disadvantage on next attack or until the end of next turn',
@@ -3022,7 +3042,7 @@ export default class EffectDefinitions {
   }
 
   get _wardingBond() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '守護聯結',
       description:
         'Adds 1 to AC and saving throws and grants resistance to all damage for 1 hour',
@@ -3054,7 +3074,7 @@ export default class EffectDefinitions {
   }
 
   get _waterBreathing() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '水下呼吸',
       description: 'No active effects and lasts for 24 hours',
       icon: 'icons/magic/water/pseudopod-swirl-blue.webp',
@@ -3063,7 +3083,7 @@ export default class EffectDefinitions {
   }
 
   get _waterWalk() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '水面行走',
       description: 'No active effects and lasts for 1 hour',
       icon: 'icons/creatures/slimes/slime-movement-swirling-blue.webp',
@@ -3073,7 +3093,7 @@ export default class EffectDefinitions {
 
   /** Class specific */
   get _bardicInspiration() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '吟遊激勵',
       description:
         'Add a dice to a single ability check, attack roll, or saving throw in the next 10 minutes',
@@ -3089,7 +3109,7 @@ export default class EffectDefinitions {
   }
 
   get _bardicInspirationD6() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '吟遊激勵 (d6)',
       description: 'For bards from level 1 to level 4',
       icon: 'icons/skills/melee/unarmed-punch-fist.webp',
@@ -3121,7 +3141,7 @@ export default class EffectDefinitions {
   }
 
   get _bardicInspirationD8() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '吟遊激勵 (d8)',
       description: 'For bards from level 5 to level 9',
       icon: 'icons/skills/melee/unarmed-punch-fist.webp',
@@ -3153,7 +3173,7 @@ export default class EffectDefinitions {
   }
 
   get _bardicInspirationD10() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '吟遊激勵 (d10)',
       description: 'For bards from level 10 to level 14',
       icon: 'icons/skills/melee/unarmed-punch-fist.webp',
@@ -3185,7 +3205,7 @@ export default class EffectDefinitions {
   }
 
   get _bardicInspirationD12() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '吟遊激勵 (d12)',
       description: 'For bards from level 15 to level 20',
       icon: 'icons/skills/melee/unarmed-punch-fist.webp',
@@ -3217,7 +3237,7 @@ export default class EffectDefinitions {
   }
 
   get _channelDivinitySacredWeapon() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '引導神力:至聖武器',
       description:
         'Add charisma modifier (minimum +1) to all weapon attack rolls and emits 20/40 light for 1 minute (requires ATL)',
@@ -3266,7 +3286,7 @@ export default class EffectDefinitions {
   }
 
   get _channelDivinityTurnTheUnholy() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '引導神力:驅散不潔者',
       description:
         'No active effects and lasts for 1 minute. Expires on taking damage.',
@@ -3281,7 +3301,7 @@ export default class EffectDefinitions {
   }
 
   get _channelDivinityTurnUndead() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '驅散不死',
       description:
         'No active effects and lasts for 1 minute. Expires on taking damage.',
@@ -3296,7 +3316,7 @@ export default class EffectDefinitions {
   }
 
   get _eyesofNight() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '黑夜明目',
       description: 'Upgrade darkvision to 300 ft. for 1 hours',
       icon: 'icons/magic/perception/hand-eye-fire-blue.webp',
@@ -3328,7 +3348,7 @@ export default class EffectDefinitions {
 
 
   get _kiEmptyBody() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '空靈體',
       description:
         'Grants advantage on attack rolls, forces disadvantage to all who attack, and grants resistance to all damage except force for 1 minute',
@@ -3425,7 +3445,7 @@ export default class EffectDefinitions {
   }
 
   get _kiPatientDefense() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '氣:堅強防禦',
       description:
         'Grants disadvantage to all who attack and advantage on all dexterity saving throws until next turn',
@@ -3451,7 +3471,7 @@ export default class EffectDefinitions {
   }
 
   get _stunningStrike() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '震懾拳',
       description:
         'Interfere with the flow of ki in an opponent, the target be stunned until the end of your next turn',
@@ -3466,7 +3486,7 @@ export default class EffectDefinitions {
   }
 
   get _steadyAim() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '手穩就準',
       description:
         'Advantage on next attack roll on the current turn, speed is 0 until the end of the current turn',
@@ -3493,7 +3513,7 @@ export default class EffectDefinitions {
   }
 
   get _twilightSanctuary() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '暮光聖域',
       description:
         'You grant 30-foot radius temporary hit points equal to 1d6 + cleric level or end one charmed or frightened effect for 1 minute.',
@@ -3529,7 +3549,7 @@ export default class EffectDefinitions {
   }
 
   get _rage() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '狂暴',
       description:
         'Advantage on strength checks and strength saving throws, a variable bonus to melee damage based on barbarian level, and resistance to piercing, bludgeoning, and slashing damage for 1 minute. Also handles Path of the Totem Warrior resistances.',
@@ -3577,7 +3597,7 @@ export default class EffectDefinitions {
   }
 
   get _recklessAttack() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '魯莽攻擊',
       description:
         'Advantage on melee attacks for a turn and grants advantage to those who attack for 1 round',
@@ -3615,7 +3635,7 @@ export default class EffectDefinitions {
 
   /* Equipment effects */
   get _bullseyeLantern() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '牛眼提燈',
       description:
         'Adds lantern light in a 60 degree cone for 6 hours (requires ATL)',
@@ -3657,7 +3677,7 @@ export default class EffectDefinitions {
   }
 
   get _candle() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '蠟燭',
       description: 'Adds candle light for 1 hour (requires ATL)',
       icon: 'icons/sundries/lights/candle-unlit-white.webp',
@@ -3693,7 +3713,7 @@ export default class EffectDefinitions {
   }
 
   get _hoodedLantern() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '提燈 (附蓋)',
       description: 'Adds hooded lantern light for 6 hours (requires ATL)',
       icon: 'icons/sundries/lights/lantern-iron-yellow.webp',
@@ -3729,7 +3749,7 @@ export default class EffectDefinitions {
   }
 
   get _lantern() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '提燈',
       description: 'Adds lantern light for 6 hours (requires ATL)',
       icon: 'icons/sundries/lights/lantern-iron-yellow.webp',
@@ -3765,7 +3785,7 @@ export default class EffectDefinitions {
   }
 
   get _torch() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '火炬',
       description: 'Adds torch light for 1 hour (requires ATL)',
       icon: 'icons/sundries/lights/torch-black.webp',
@@ -3802,7 +3822,7 @@ export default class EffectDefinitions {
 
   /* Other effects */
   get _bonusAction() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '附贈動作',
       description: 'No active effects and expires on turn start',
       icon: 'modules/dfreds-convenient-effects/images/bonus-action.svg',
@@ -3815,7 +3835,7 @@ export default class EffectDefinitions {
   }
 
   get _coverHalf() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '半掩蔽',
       description: 'Adds 2 to AC and dexterity saving throws',
       icon: 'modules/dfreds-convenient-effects/images/broken-wall.svg',
@@ -3835,7 +3855,7 @@ export default class EffectDefinitions {
   }
 
   get _coverThreeQuarters() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '四分之三掩蔽',
       description: 'Adds 5 to AC and dexterity saving throws',
       icon: 'modules/dfreds-convenient-effects/images/brick-wall.svg',
@@ -3855,7 +3875,7 @@ export default class EffectDefinitions {
   }
 
   get _encumbered() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '重載',
       description: 'Lowers movement by 10 ft.',
       icon: 'icons/svg/down.svg',
@@ -3871,7 +3891,7 @@ export default class EffectDefinitions {
   }
 
   get _dodge() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '迴避',
       description:
         'Grants disadvantage to all who attack and advantage on all dexterity saving throws until next turn',
@@ -3897,7 +3917,7 @@ export default class EffectDefinitions {
   }
 
   get _flanked() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: 'Flanked',
       description: 'Grants advantage to all who melee attack',
       icon: 'modules/dfreds-convenient-effects/images/encirclement.svg',
@@ -3917,7 +3937,7 @@ export default class EffectDefinitions {
   }
 
   get _flanking() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: 'Flanking',
       description: 'Grants advantage on melee attack rolls',
       icon: 'icons/svg/sword.svg',
@@ -3937,7 +3957,7 @@ export default class EffectDefinitions {
   }
 
   get _greatWeaponMaster() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '巨武大師',
       description: 'Subtracts 5 from melee attacks but adds 10 to melee damage',
       icon: 'icons/skills/melee/hand-grip-staff-yellow-brown.webp',
@@ -3957,7 +3977,7 @@ export default class EffectDefinitions {
   }
 
   get _heavilyEncumbered() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '超載',
       description:
         'Lowers movement by 20 ft., disadvantage on all attack rolls, and disadvantage on strength, dexterity, and constitution saves',
@@ -3994,7 +4014,7 @@ export default class EffectDefinitions {
   }
 
   get _inspiration() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '激勵骰',
       description:
         'Advantage on everything and expires after any action, save, check, or skill roll',
@@ -4015,7 +4035,7 @@ export default class EffectDefinitions {
   }
 
   get _rangedDisadvantage() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: 'Ranged Disadvantage',
       description: 'Disadvantage on ranged attack rolls',
       icon: 'modules/dfreds-convenient-effects/images/broken-arrow.svg',
@@ -4035,7 +4055,7 @@ export default class EffectDefinitions {
   }
 
   get _reaction() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '反應',
       description: 'No active effects and expires on turn start',
       icon: 'modules/dfreds-convenient-effects/images/reaction.svg',
@@ -4048,7 +4068,7 @@ export default class EffectDefinitions {
   }
 
   get _ready() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '準備',
       description: 'No active effects and expires on turn start',
       icon: 'modules/dfreds-convenient-effects/images/ready.svg',
@@ -4061,7 +4081,7 @@ export default class EffectDefinitions {
   }
 
   get _sharpshooter() {
-    return createActiveEffect({
+    return this._effectHelpers.createActiveEffect({
       label: '神射手',
       description:
         'Subtracts 5 from ranged attacks but adds 10 to ranged damage',
