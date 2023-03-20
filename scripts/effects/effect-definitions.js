@@ -2,6 +2,7 @@ import Constants from '../constants.js';
 import CustomEffectsHandler from './custom-effects-handler.js';
 import EffectHelpers from './effect-helpers.js';
 import Settings from '../settings.js';
+
 /**
  * Defines all of the effect definitions
  */
@@ -226,6 +227,7 @@ export default class EffectDefinitions {
     );
   }
 
+
   /**
    * Get all the class feature effects
    *
@@ -270,7 +272,7 @@ export default class EffectDefinitions {
       ]
     );
   }
-
+  
   /**
    * Get all the other effects
    *
@@ -3604,7 +3606,7 @@ export default class EffectDefinitions {
       icon: 'icons/skills/melee/blade-tips-triple-bent-white.webp',
       seconds: CONFIG.time.roundTime,
       subEffects: [
-        createActiveEffect({
+        this._effectHelpers.createActiveEffect({
           label: '魯莽攻擊:攻擊優勢',
           description: 'Advantage on melee attacks until end of turn',
           icon: 'icons/skills/melee/blade-tips-triple-bent-white.webp',
@@ -3617,7 +3619,7 @@ export default class EffectDefinitions {
             },
           ],
         }),
-        createActiveEffect({
+        this._effectHelpers.createActiveEffect({
           label: '魯莽攻擊:受擊優勢',
           description: 'Grant advantage to those who attack until next turn',
           icon: 'icons/skills/melee/blade-tips-triple-bent-white.webp',
