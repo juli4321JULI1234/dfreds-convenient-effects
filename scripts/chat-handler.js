@@ -1,4 +1,4 @@
-import { getDescription } from './effects/effect-helpers.js';
+import EffectHelpers from './effects/effect-helpers.js';
 import Settings from './settings.js';
 
 /**
@@ -6,6 +6,7 @@ import Settings from './settings.js';
  */
 export default class ChatHandler {
   constructor() {
+    this._effectHelpers = new EffectHelpers();
     this._settings = new Settings();
   }
 
@@ -39,14 +40,7 @@ export default class ChatHandler {
 
     await ChatMessage.create({
       user: game.userId,
-      whisper:
-        this._settings.chatMessagePermission === CONST.USER_ROLES.PLAYER
-          ? undefined
-          : game.users
-              .filter(
-                (user) => user.role >= this._settings.chatMessagePermission
-              )
-              .map((user) => user.id),
+      whisper: this._getChatTargets(actor),
       content: this._getChatContent({
         effect,
         reason,
@@ -69,8 +63,28 @@ export default class ChatHandler {
     return message;
   }
 
+  _getChatTargets(actor) {
+    if (this._settings.chatMessagePermission === CONST.USER_ROLES.PLAYER) {
+      return null;
+    }
+
+    return game.users
+      .filter((user) => {
+        const hasRole = user.role >= this._settings.chatMessagePermission;
+        const ownsActor =
+          !!user?.character?.uuid && user.character.uuid === actor.uuid;
+
+        if (this._settings.sendChatToActorOwner) {
+          return hasRole || ownsActor;
+        } else {
+          return hasRole;
+        }
+      })
+      .map((user) => user.id);
+  }
+
   _getDescription(effect) {
-    const description = getDescription(effect);
+    const description = this._effectHelpers.getDescription(effect);
     if (description) {
       return description;
     } else {

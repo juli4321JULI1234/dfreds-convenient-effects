@@ -29,6 +29,9 @@ export default class DynamicEffectsAdder {
       case '縮小':
         this._addReduceEffects(effect, actor);
         break;
+      case '守護靈光':
+        this._addAuraofProtectionEffects(effect, actor);
+        break;
       case '暮光聖域':
         this._addTwilightShroudEffects(effect, actor);
         break;
@@ -256,6 +259,67 @@ export default class DynamicEffectsAdder {
       effect.duration.seconds = null;
       effect.duration.rounds = null;
       effect.duration.turns = null;
+    }
+  }
+
+  _addAuraofProtectionEffects(effect, actor) {
+    const paladinClass = actor.items.find(
+      (item) => item.type === 'class' && item.name === 'Paladin'
+    );
+
+    if (!paladinClass) {
+      ui.notifications.warn('Selected actor is not a Paladin'); 
+      return;
+    }
+
+    this._subAura(effect, actor, paladinClass);
+    this._addRadius(effect, paladinClass);
+  }
+
+  async _subAura(effect, actor, paladinClass) {
+    if (paladinClass.system.levels > 9) { //Aura of Courage
+      effect.changes.push({          
+        key: 'system.traits.ci.value',
+        mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+        value: 'frightened',
+        priority: 5,
+      });  
+    }
+    if (paladinClass.system.levels > 6) {
+      if (paladinClass.subclass?.identifier === 'oath-of-devotion') { //Aura of Devotion
+        effect.changes.push({          
+          key: 'system.traits.ci.value',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: 'charmed',
+          priority: 5,
+          });  
+      } else if (paladinClass.subclass?.identifier === 'oath-of-the-ancients') { //Aura of Warding
+        effect.changes.push({          
+          key: 'system.traits.dr.custom',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '法術傷害',
+          priority: 5,
+        });  
+      } else if (paladinClass.subclass?.identifier === 'oath-of-the-watchers') { //Aura of Sentinel
+        effect.changes.push({          
+          key: 'system.attributes.init.bonus',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: '@prof',
+          priority: 5,
+        });  
+      } else if (paladinClass.subclass?.identifier === 'oath-of-glory') { //Aura of Alacrity
+        await game.dfreds.effectInterface.addEffect({
+          effectName: '迅捷靈光',
+          uuid: actor.uuid,
+          origin: `Convenient Effect: ${effect.label}`,
+        });
+      }
+    }
+  }
+
+  _addRadius(effect, paladinClass) {
+    if (paladinClass.system.levels > 17) {
+      effect.flags['ActiveAuras']['radius'] = 30;
     }
   }
 
