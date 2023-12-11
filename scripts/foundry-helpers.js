@@ -16,7 +16,6 @@ export default class FoundryHelpers {
    * @returns {string[]} actor uuids for selected or targeted tokens
    */
   getActorUuids() {
-
     if (this._settings.prioritizeTargets && game.user.targets.size !== 0) {
       // Start with targets if prioritized
       return Array.from(game.user.targets).map((token) => token.actor.uuid);

@@ -1,4 +1,5 @@
 import Constants from '../constants.js';
+import EffectHelpers from './effect-helpers.js';
 import Settings from '../settings.js';
 
 /**
@@ -6,6 +7,7 @@ import Settings from '../settings.js';
  */
 export default class DynamicEffectsAdder {
   constructor() {
+    this._effectHelpers = new EffectHelpers();
     this._settings = new Settings();
   }
 
@@ -16,7 +18,7 @@ export default class DynamicEffectsAdder {
    * @param {Actor} actor - the affected actor
    */
   async addDynamicEffects(effect, actor) {
-    switch (effect.label.toLowerCase()) {
+    switch (effect.name.toLowerCase()) {
       case '聖言術':
         await this._addDivineWordEffects(effect, actor);
         break;
@@ -34,12 +36,13 @@ export default class DynamicEffectsAdder {
         break;
       case '暮光聖域':
         this._addTwilightShroudEffects(effect, actor);
-        break;
+        break;  
     }
   }
 
   async _addDivineWordEffects(effect, actor) {
     const remainingHp = actor.system.attributes.hp.value;
+    const origin = this._effectHelpers.getId(effect.name);
 
     if (remainingHp <= 20) {
       await actor.update({
@@ -50,49 +53,45 @@ export default class DynamicEffectsAdder {
         uuid: actor.uuid,
         overlay: true,
       });
-      effect.flags[Constants.MODULE_ID][Constants.FLAGS.DESCRIPTION] =
-        'Killed instantly';
+      effect.description = '立即死亡';
     } else if (remainingHp <= 30) {
       await game.dfreds.effectInterface.addEffect({
         effectName: '目盲',
         uuid: actor.uuid,
-        origin: `Convenient Effect: ${effect.label}`,
+        origin,
       });
       await game.dfreds.effectInterface.addEffect({
         effectName: '耳聾',
         uuid: actor.uuid,
-        origin: `Convenient Effect: ${effect.label}`,
+        origin,
       });
       await game.dfreds.effectInterface.addEffect({
         effectName: '震懾',
         uuid: actor.uuid,
-        origin: `Convenient Effect: ${effect.label}`,
+        origin,
       });
-      effect.flags[Constants.MODULE_ID][Constants.FLAGS.DESCRIPTION] =
-        '目盲, 耳聾, 和震懾1持續小時。';
+      effect.description = '目盲, 耳聾, 和震懾1持續小時。';
       effect.duration.seconds = Constants.SECONDS.IN_ONE_HOUR;
     } else if (remainingHp <= 40) {
       await game.dfreds.effectInterface.addEffect({
         effectName: '目盲',
         uuid: actor.uuid,
-        origin: `Convenient Effect: ${effect.label}`,
+        origin,
       });
       await game.dfreds.effectInterface.addEffect({
         effectName: '耳聾',
         uuid: actor.uuid,
-        origin: `Convenient Effect: ${effect.label}`,
+        origin,
       });
-      effect.flags[Constants.MODULE_ID][Constants.FLAGS.DESCRIPTION] =
-        '目盲和耳聾持續10分鐘。';
+      effect.description = '目盲和耳聾持續10分鐘。';
       effect.duration.seconds = Constants.SECONDS.IN_TEN_MINUTES;
     } else if (remainingHp <= 50) {
       await game.dfreds.effectInterface.addEffect({
         effectName: '耳聾',
         uuid: actor.uuid,
-        origin: `Convenient Effect: ${effect.label}`,
+        origin,
       });
-      effect.flags[Constants.MODULE_ID][Constants.FLAGS.DESCRIPTION] =
-        '耳聾持續1分鐘';
+      effect.description = '耳聾持續1分鐘';
       effect.duration.seconds = Constants.SECONDS.IN_ONE_MINUTE;
     }
   }
@@ -153,7 +152,6 @@ export default class DynamicEffectsAdder {
     }
 
     this._addResistancesIfBearTotem(effect, actor, barbarianClass);
-    this._addDamageIfZealot(effect, actor, barbarianClass);
     this._determineIfPersistantRage(effect, barbarianClass);
   }
 
@@ -222,38 +220,6 @@ export default class DynamicEffectsAdder {
     }
   }
 
-  _addDamageIfZealot(effect, actor, barbarianClass) {
-    const isZealot =
-      barbarianClass.subclass?.identifier === 'path-of-the-zealot';
-
-    if (isZealot) {
-      effect.changes.push(
-        ...[
-          {
-            key: 'flags.${this._flagPrefix}.optional.NAME.damage.mwak',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: '+1d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
-          },
-          {
-            key: 'flags.${this._flagPrefix}.optional.NAME.damage.rwak',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: '+1d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
-          },
-          {
-            key: 'flags.${this._flagPrefix}.optional.NAME.count',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: 'turn',
-          },
-          {
-            key: 'flags.${this._flagPrefix}.optional.NAME.label',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: '神性狂怒',
-          },
-        ]
-      );
-    }
-  }
-
   _determineIfPersistantRage(effect, barbarianClass) {
     if (barbarianClass.system.levels > 14) {
       effect.duration.seconds = null;
@@ -277,6 +243,8 @@ export default class DynamicEffectsAdder {
   }
 
   async _subAura(effect, actor, paladinClass) {
+    const origin = this._effectHelpers.getId(effect.name);
+
     if (paladinClass.system.levels > 9) { //Aura of Courage
       effect.changes.push({          
         key: 'system.traits.ci.value',
@@ -311,13 +279,13 @@ export default class DynamicEffectsAdder {
         await game.dfreds.effectInterface.addEffect({
           effectName: '迅捷靈光',
           uuid: actor.uuid,
-          origin: `Convenient Effect: ${effect.label}`,
+          origin,
         });
       }
     }
   }
 
-  _addRadius(effect, paladinClass) {
+  _addRadius(effect, paladinClass) { //Aura of Alacrity has bug
     if (paladinClass.system.levels > 17) {
       effect.flags['ActiveAuras']['radius'] = 30;
     }
@@ -342,4 +310,5 @@ export default class DynamicEffectsAdder {
       });
     }
   }
+
 }
