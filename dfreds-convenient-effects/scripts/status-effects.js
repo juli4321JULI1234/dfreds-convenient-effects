@@ -1,4 +1,5 @@
 import CustomEffectsHandler from './effects/custom-effects-handler.js';
+import EffectHelpers from './effects/effect-helpers.js';
 import Settings from './settings.js';
 
 /**
@@ -7,54 +8,50 @@ import Settings from './settings.js';
 export default class StatusEffects {
   constructor() {
     this._customEffectsHandler = new CustomEffectsHandler();
+    this._effectsHelper = new EffectHelpers();
     this._settings = new Settings();
   }
 
   /**
    * Initialize the token status effects based on the user configured settings.
    */
-  initializeStatusEffects() {
+  initialize() {
     const modifyStatusEffects = this._settings.modifyStatusEffects;
 
     if (modifyStatusEffects === 'replace') {
-      CONFIG.Combat.defeatedStatusId = 'Convenient Effect: 死亡';
       CONFIG.statusEffects = this._fetchStatusEffects();
-
-      if (CONFIG.specialStatusEffects) {
-        CONFIG.specialStatusEffects = {
-          DEFEATED: 'Convenient Effect: 死亡',
-          INVISIBLE: 'Convenient Effect: 隱形',
-          BLIND: 'Convenient Effect: 目盲',
-        };
-      }
     } else if (modifyStatusEffects === 'add') {
-      CONFIG.Combat.defeatedStatusId = 'Convenient Effect: 死亡';
       CONFIG.statusEffects = CONFIG.statusEffects.concat(
         this._fetchStatusEffects()
       );
-      if (CONFIG.specialStatusEffects) {
-        CONFIG.specialStatusEffects = {
-          DEFEATED: 'Convenient Effect: 死亡',
-          INVISIBLE: 'Convenient Effect: 隱形',
-          BLIND: 'Convenient Effect: 目盲',
-        };
-      }
     }
   }
 
   _fetchStatusEffects() {
-    return this._settings.statusEffectNames
+    let statusEffects = this._settings.statusEffectNames
       .map((name) => {
-        const effect = this._customEffectsHandler
-          .getCustomEffects()
-          .find((effect) => effect.name == name);
-
-        if (effect) return effect;
-
-        return game.dfreds.effects.all.find((effect) => effect.name == name);
+        return game.dfreds.effectInterface.findEffectByName(name);
       })
       .filter((effect) => effect)
-      .map((effect) => effect.convertToActiveEffectData());
+      .map((effect) => {
+        return {
+          id: this._effectsHelper.getId(effect.name),
+          ...effect.toObject(),
+        };
+      });
+
+    if (this._settings.statusEffectsSortOrder === 'alphabetical') {
+      return statusEffects.sort((a, b) => {
+        let nameA = a.name.toLowerCase();
+        let nameB = b.name.toLowerCase();
+
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      });
+    } else {
+      return statusEffects;
+    }
   }
 
   /**
@@ -104,13 +101,9 @@ export default class StatusEffects {
     // Get statuses which are active for the token actor
     const actor = token.actor || null;
     const statuses = actor
-      ? actor.effects.reduce((obj, e) => {
-          const id = e.getFlag('core', 'statusId');
-          if (id) {
-            obj[id] = {
-              id: id,
-              overlay: !!e.getFlag('core', 'overlay'),
-            };
+      ? actor.effects.reduce((obj, effect) => {
+          for (const id of effect.statuses) {
+            obj[id] = { id, overlay: !!effect.getFlag('core', 'overlay') };
           }
           return obj;
         }, {})
@@ -131,7 +124,7 @@ export default class StatusEffects {
       // NOTE: changed key from src to id
       obj[id] = {
         id: e.id ?? '',
-        title: e.label ? game.i18n.localize(e.label) : null,
+        title: e.name ? game.i18n.localize(e.name) : null,
         src,
         isActive,
         isOverlay,

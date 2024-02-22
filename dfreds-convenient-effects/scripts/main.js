@@ -1,15 +1,18 @@
 import ChatHandler from './chat-handler.js';
 import Constants from './constants.js';
 import Controls from './controls.js';
-import CustomEffectsHandler from './effects/custom-effects-handler.js';
 import EffectDefinitions from './effects/effect-definitions.js';
+import EffectHelpers from './effects/effect-helpers.js';
 import EffectInterface from './effect-interface.js';
 import FoundryHelpers from './foundry-helpers.js';
 import HandlebarHelpers from './handlebar-helpers.js';
 import MacroHandler from './macro-handler.js';
 import Settings from './settings.js';
 import StatusEffects from './status-effects.js';
+import TextEnrichers from './text-enrichers.js';
+import { addNestedEffectsToEffectConfig } from './ui/add-nested-effects-to-effect-config.js';
 import { libWrapper } from './lib/shim.js';
+import { removeCustomItemFromSidebar } from './ui/remove-custom-item-from-sidebar.js';
 
 /**
  * Initialize the settings and handlebar helpers
@@ -17,10 +20,11 @@ import { libWrapper } from './lib/shim.js';
 Hooks.once('init', () => {
   new Settings().registerSettings();
   new HandlebarHelpers().registerHelpers();
+  new TextEnrichers().initialize();
 });
 
 /**
- * Handle initializing the API when socket lib is ready
+ * Handle setting up the API when socket lib is ready
  */
 Hooks.once('socketlib.ready', () => {
   game.dfreds = game.dfreds || {};
@@ -28,17 +32,32 @@ Hooks.once('socketlib.ready', () => {
   game.dfreds.effects = new EffectDefinitions();
   game.dfreds.effectInterface = new EffectInterface();
   game.dfreds.statusEffects = new StatusEffects();
-
-  game.dfreds.effectInterface.initialize();
 });
 
 /**
- * Handle initializing the status and custom effects
+ * Handle creating the custom effects ID on ready
  */
 Hooks.once('ready', async () => {
-  const customEffectsHandler = new CustomEffectsHandler();
-  await customEffectsHandler.deleteInvalidEffects();
-  game.dfreds.statusEffects.initializeStatusEffects();
+  const settings = new Settings();
+
+  if (!settings.customEffectsItemId) {
+    const item = await CONFIG.Item.documentClass.create({
+      name: 'Custom Convenient Effects',
+      img: 'modules/dfreds-convenient-effects/images/magic-palm.svg',
+      type: 'consumable',
+    });
+
+    await settings.setCustomEffectsItemId(item.id);
+  }
+});
+
+/**
+ * Handle initializing everything
+ */
+Hooks.once(`${Constants.MODULE_ID}.initialize`, async () => {
+  game.dfreds.effectInterface.initialize();
+  game.dfreds.effects.initialize();
+  game.dfreds.statusEffects.initialize();
 
   Hooks.callAll(`${Constants.MODULE_ID}.ready`);
 });
@@ -78,20 +97,18 @@ Hooks.once('setup', () => {
     function (wrapper, ...args) {
       const tokenHud = this;
       game.dfreds.statusEffects.refreshStatusIcons(tokenHud);
-      wrapper(...args);
-    },
-    'WRAPPER'
+    }
   );
+
+  Hooks.callAll(`${Constants.MODULE_ID}.initialize`);
 });
 
-Hooks.on('renderItemDirectory', (_itemDirectory, html, _data) => {
-  const settings = new Settings();
-  const customEffectsItemId = settings.customEffectsItemId;
+Hooks.on('changeSidebarTab', (directory) => {
+  removeCustomItemFromSidebar(directory);
+});
 
-  if (!customEffectsItemId) return;
-
-  const li = html.find(`li[data-document-id="${customEffectsItemId}"]`);
-  li.remove();
+Hooks.on('renderItemDirectory', (directory) => {
+  removeCustomItemFromSidebar(directory);
 });
 
 /**
@@ -105,15 +122,16 @@ Hooks.on('getSceneControlButtons', (controls) => {
  * Handle creating a chat message if an effect is added
  */
 Hooks.on('preCreateActiveEffect', (activeEffect, _config, _userId) => {
+  const effectHelpers = new EffectHelpers();
   if (
-    !activeEffect?.flags?.isConvenient ||
+    !effectHelpers.isConvenient(activeEffect) ||
     !(activeEffect?.parent instanceof Actor)
   )
     return;
 
   const chatHandler = new ChatHandler();
   chatHandler.createChatForEffect({
-    effectName: activeEffect?.label,
+    effectName: activeEffect?.name,
     reason: 'Applied to',
     actor: activeEffect?.parent,
     isCreateActiveEffect: true,
@@ -121,27 +139,14 @@ Hooks.on('preCreateActiveEffect', (activeEffect, _config, _userId) => {
 });
 
 /**
- * Handle adding any actor data changes when an active effect is added to an actor
+ * Handle when an active effect is created
  */
 Hooks.on('createActiveEffect', (activeEffect, _config, _userId) => {
   const settings = new Settings();
   if (activeEffect.parent.id == settings.customEffectsItemId) {
+    // Re-render the app if open and a new effect is added to the custom item
     const foundryHelpers = new FoundryHelpers();
     foundryHelpers.renderConvenientEffectsAppIfOpen();
-  }
-
-  if (
-    !activeEffect?.flags?.isConvenient ||
-    !(activeEffect?.parent instanceof Actor)
-  )
-    return;
-
-  if (activeEffect?.flags?.requiresActorUpdate) {
-    game.dfreds.effectInterface.addActorDataChanges(
-      activeEffect?.label,
-      activeEffect?.parent?.uuid,
-      activeEffect?.origin
-    );
   }
 });
 
@@ -151,6 +156,9 @@ Hooks.on('createActiveEffect', (activeEffect, _config, _userId) => {
 Hooks.on('updateActiveEffect', (activeEffect, _config, _userId) => {
   const settings = new Settings();
   if (activeEffect.parent.id == settings.customEffectsItemId) {
+    const effectHelpers = new EffectHelpers();
+    effectHelpers.updateStatusId(activeEffect);
+
     const foundryHelpers = new FoundryHelpers();
     foundryHelpers.renderConvenientEffectsAppIfOpen();
   }
@@ -160,8 +168,9 @@ Hooks.on('updateActiveEffect', (activeEffect, _config, _userId) => {
  * Handle creating a chat message if an effect has expired or was removed
  */
 Hooks.on('preDeleteActiveEffect', (activeEffect, _config, _userId) => {
+  const effectHelpers = new EffectHelpers();
   if (
-    !activeEffect?.flags?.isConvenient ||
+    !effectHelpers.isConvenient(activeEffect) ||
     !(activeEffect?.parent instanceof Actor)
   )
     return;
@@ -172,7 +181,7 @@ Hooks.on('preDeleteActiveEffect', (activeEffect, _config, _userId) => {
 
   const chatHandler = new ChatHandler();
   chatHandler.createChatForEffect({
-    effectName: activeEffect?.label,
+    effectName: activeEffect?.name,
     reason: isExpired ? 'Expired from' : 'Removed from',
     actor: activeEffect?.parent,
     isCreateActiveEffect: false,
@@ -189,43 +198,54 @@ Hooks.on('deleteActiveEffect', (activeEffect, _config, _userId) => {
     foundryHelpers.renderConvenientEffectsAppIfOpen();
   }
 
+  const effectHelpers = new EffectHelpers();
   if (
-    !activeEffect?.flags?.isConvenient ||
+    !effectHelpers.isConvenient(activeEffect) ||
     !(activeEffect?.parent instanceof Actor)
-  )
+  ) {
     return;
+  }
 
-  if (activeEffect?.flags?.requiresActorUpdate) {
-    game.dfreds.effectInterface.removeActorDataChanges(
-      activeEffect?.label,
-      activeEffect?.parent?.uuid
-    );
+  // Remove effects that were added due to this effect
+  const actor = activeEffect.parent;
+  const effectIdsFromThisEffect = actor.effects
+    .filter(
+      (effect) => effect.origin === effectHelpers.getId(activeEffect.name)
+    )
+    .map((effect) => effect.id);
+
+  if (effectIdsFromThisEffect) {
+    actor.deleteEmbeddedDocuments('ActiveEffect', effectIdsFromThisEffect);
   }
 });
 
 /**
- * Handle adding a form item for effect description to custom effects
+ * Handle changing the rendered active effect config
  */
-Hooks.on('renderActiveEffectConfig', (activeEffectConfig, html, _data) => {
-  if (!activeEffectConfig?.object?.flags?.isCustomConvenient) return;
+Hooks.on(
+  'renderActiveEffectConfig',
+  async (activeEffectConfig, $html, _data) => {
+    const settings = new Settings();
 
-  const labelFormGroup = html
-    .find('section[data-tab="details"] .form-group')
-    .first();
-
-  const description =
-    activeEffectConfig.object.flags.convenientDescription ??
-    'Applies custom effects';
-  labelFormGroup.after(
-    `<div class="form-group"><label>Effect Description</label><div class="form-fields"><input type="text" name="flags.convenientDescription" value="${description}"></div></div>`
-  );
-});
+    // Only add nested effects if the effect exists on the custom effect item
+    if (
+      !activeEffectConfig.object.parent ||
+      activeEffectConfig.object.parent.id != settings.customEffectsItemId
+    )
+      return;
+    addNestedEffectsToEffectConfig(activeEffectConfig, $html);
+  }
+);
 
 /**
  * Handle re-rendering the ConvenientEffectsApp if it is open and a custom convenient active effect sheet is closed
  */
 Hooks.on('closeActiveEffectConfig', (activeEffectConfig, _html) => {
-  if (!activeEffectConfig?.object?.flags?.isCustomConvenient) return;
+  const settings = new Settings();
+
+  // Only re-render if the effect exists on the custom effect
+  if (activeEffectConfig.object.parent?.id != settings.customEffectsItemId)
+    return;
 
   const foundryHelpers = new FoundryHelpers();
   foundryHelpers.renderConvenientEffectsAppIfOpen();
@@ -250,10 +270,42 @@ Hooks.on('dropActorSheetData', (actor, _actorSheetCharacter, data) => {
   const effect = game.dfreds.effectInterface.findEffectByName(data.effectName);
 
   // core will handle the drop since we are not using a nested effect
-  if (!effect.nestedEffects.length) return;
+  if (!game.dfreds.effectInterface.hasNestedEffects(effect)) return;
 
   game.dfreds.effectInterface.addEffect({
     effectName: data.effectName,
     uuid: actor.uuid,
   });
+});
+
+/**
+ * Handle adding a button to item cards.
+ */
+Hooks.on('renderChatMessage', (message, html) => {
+  const settings = new Settings();
+
+  // only add button on item cards if configured
+  const itemCard = html[0].querySelector('.item-card');
+  if (itemCard && settings.addChatButton) {
+    // check if this item has a Convenient Effect
+    const name = itemCard.querySelector('.item-name')?.textContent;
+    if (game.dfreds.effectInterface.findEffectByName(name)) {
+      // build a button
+      const button = document.createElement('button');
+      button.textContent = 'Add Convenient Effect';
+      button.onclick = () => game.dfreds.effectInterface.toggleEffect(name);
+        
+      // construct empty card-buttons if it doesn't exist (e.g. quick-roll from Ready Set Roll)
+      if (!itemCard.querySelector('.card-buttons')) {  
+        const div = document.createElement('div');
+        div.classList.add('card-buttons');
+
+        let cardContent = itemCard.querySelector('.card-content');
+        cardContent.insertAdjacentElement('afterend', div);
+    }
+
+      // add button to end of card-buttons
+      itemCard.querySelector('.card-buttons').append(button);
+    }
+  }
 });

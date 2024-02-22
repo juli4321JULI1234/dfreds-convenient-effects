@@ -4,47 +4,41 @@ import Constants from './constants.js';
  * Handle setting and fetching all settings in the module
  */
 export default class Settings {
-  // Settings keys
-  static CHAT_MESSAGE_PERMISSION = 'chatMessagePermission';
-  static APP_CONTROLS_PERMISSION = 'controlsPermission';
+  // Config setting keys
   static ALLOW_PLAYER_CUSTOM_EFFECTS = 'allowPlayerCustomEffects';
+  static APP_CONTROLS_PERMISSION = 'controlsPermission';
+  static CHAT_MESSAGE_PERMISSION = 'chatMessagePermission';
   static INTEGRATE_WITH_ATE = 'integrateWithAtl';
   static INTEGRATE_WITH_TOKEN_MAGIC = 'integrateWithTokenMagic';
   static MODIFY_STATUS_EFFECTS = 'modifyStatusEffects';
   static PRIORITIZE_TARGETS = 'prioritizeTargets';
-  static REMOVE_CONTROLS_PERMISSION = 'removeControlsPermission';
+  static SEND_CHAT_TO_ACTOR_OWNER = 'sendChatToActorOwner';
   static SHOW_CHAT_MESSAGE_EFFECT_DESCRIPTION = 'chatMessageEffectDescription';
   static SHOW_NESTED_EFFECTS = 'showNestedEffects';
+  static STATUS_EFFECTS_SORT_ORDER = 'statusEffectsSortOrder';
+  static ADD_CHAT_BUTTON = 'addChatButton';
 
+  // Non-config setting keys
+  static CUSTOM_EFFECTS_ITEM_ID = 'customEffectsItemId';
+  static EXPANDED_FOLDERS = 'expandedFolders';
   static FAVORITE_EFFECT_NAMES = 'favoriteEffectNames';
   static STATUS_EFFECT_NAMES = 'statusEffectNames';
-  static EXPANDED_FOLDERS = 'expandedFolders';
-  static CUSTOM_EFFECTS_ITEM_ID = 'customEffectsItemId';
 
   /**
    * Register all the settings for the module
    */
   registerSettings() {
+    this._registerConfigSettings();
+    this._registerNonConfigSettings();
+  }
+
+  _registerConfigSettings() {
     const userRoles = {};
     userRoles[CONST.USER_ROLES.PLAYER] = 'Player';
     userRoles[CONST.USER_ROLES.TRUSTED] = 'Trusted Player';
     userRoles[CONST.USER_ROLES.ASSISTANT] = 'Assistant GM';
     userRoles[CONST.USER_ROLES.GAMEMASTER] = 'Game Master';
     userRoles[5] = 'None';
-
-    game.settings.register(
-      Constants.MODULE_ID,
-      Settings.CHAT_MESSAGE_PERMISSION,
-      {
-        name: 'Chat Message Permission',
-        hint: 'This defines the minimum permission level to see chat messages when effects are applied, removed, or expire. Setting this to None will never show chat messages.',
-        scope: 'world',
-        config: true,
-        default: CONST.USER_ROLES.GAMEMASTER,
-        choices: userRoles,
-        type: String,
-      }
-    );
 
     game.settings.register(
       Constants.MODULE_ID,
@@ -63,18 +57,94 @@ export default class Settings {
 
     game.settings.register(
       Constants.MODULE_ID,
-      Settings.REMOVE_CONTROLS_PERMISSION,
+      Settings.MODIFY_STATUS_EFFECTS,
       {
-        name: 'Remove Controls Permission',
-        hint: 'This defines the minimum permission level to remove Convenient Effects through the button on the token controls. Setting this to None will disable the button entirely.',
+        name: 'Modify Status Effects',
+        hint: 'This is how status effects on the token HUD will be modified. Replacing them means all other status effects will be removed in favor of the conditions provided by Convenient Effects. Adding them means they are appended to the end of the existing status effects. Requires a Foundry reload on change.',
+        scope: 'world',
+        config: true,
+        default: 'none',
+        choices: {
+          none: 'None',
+          replace: 'Replace',
+          add: 'Add',
+        },
+        type: String,
+        requiresReload: true,
+      }
+    );
+
+    game.settings.register(
+      Constants.MODULE_ID,
+      Settings.STATUS_EFFECTS_SORT_ORDER,
+      {
+        name: 'Status Effects Sort Order',
+        hint: 'This is how status effects are sorted in the token HUD. Requires a Foundry reload on change.',
+        scope: 'world',
+        config: true,
+        default: 'none',
+        choices: {
+          byOrderAdded: 'By Order Added',
+          alphabetical: 'Alphabetical',
+        },
+        type: String,
+        requiresReload: true,
+      }
+    );
+
+    game.settings.register(
+      Constants.MODULE_ID,
+      Settings.CHAT_MESSAGE_PERMISSION,
+      {
+        name: 'Chat Message Permission',
+        hint: 'This defines the minimum permission level to see chat messages when effects are applied, removed, or expire. Setting this to None will never show chat messages.',
         scope: 'world',
         config: true,
         default: CONST.USER_ROLES.GAMEMASTER,
         choices: userRoles,
         type: String,
-        requiresReload: true,
       }
     );
+
+    game.settings.register(
+      Constants.MODULE_ID,
+      Settings.SHOW_CHAT_MESSAGE_EFFECT_DESCRIPTION,
+      {
+        name: 'Show Chat Message Effect Description',
+        hint: 'This is when effect descriptions are shown on chat messages.',
+        scope: 'world',
+        config: true,
+        default: 'onAddOrRemove',
+        choices: {
+          onAddOrRemove: 'On Add or Remove',
+          onAddOnly: 'On Add Only',
+          never: 'Never',
+        },
+        type: String,
+      }
+    );
+
+    game.settings.register(
+      Constants.MODULE_ID,
+      Settings.SEND_CHAT_TO_ACTOR_OWNER,
+      {
+        name: 'Send Chat to Actor Owner',
+        hint: 'If enabled, this will also send effect chat messages to the users that own the affected actor.',
+        scope: 'world',
+        config: true,
+        default: false,
+        type: Boolean,
+      }
+    );
+
+    game.settings.register(Constants.MODULE_ID, Settings.ADD_CHAT_BUTTON, {
+      name: 'Add Button to Chat',
+      hint: 'If enabled, add a button to item chat cards to add the matching convenient effect by name.',
+      scope: 'world',
+      config: true,
+      default: false,
+      type: Boolean,
+    });
 
     game.settings.register(
       Constants.MODULE_ID,
@@ -87,10 +157,13 @@ export default class Settings {
         default: false,
         type: Boolean,
         onChange: async (value) => {
-          const customEffectsItem = await this._findOrCreateCustomEffectsItem();
+          const customEffectsItem = await this._findCustomEffectsItem();
+
+          if (!customEffectsItem) return;
+
           let newOwnership = duplicate(customEffectsItem.ownership);
           newOwnership.default = value ? 3 : 0;
-          customEffectsItem.update({ ownership: newOwnership });
+          await customEffectsItem.update({ ownership: newOwnership });
         },
       }
     );
@@ -117,25 +190,6 @@ export default class Settings {
       }
     );
 
-    game.settings.register(
-      Constants.MODULE_ID,
-      Settings.MODIFY_STATUS_EFFECTS,
-      {
-        name: 'Modify Status Effects',
-        hint: 'This is how status effects on the token HUD will be modified. Replacing them means all other status effects will be removed in favor of the conditions provided by Convenient Effects. Adding them means they are appended to the end of the existing status effects. Requires a Foundry reload on change.',
-        scope: 'world',
-        config: true,
-        default: 'none',
-        choices: {
-          none: 'None',
-          replace: 'Replace',
-          add: 'Add',
-        },
-        type: String,
-        requiresReload: true,
-      }
-    );
-
     game.settings.register(Constants.MODULE_ID, Settings.PRIORITIZE_TARGETS, {
       name: 'Prioritize Targets',
       hint: 'If enabled, effects will be applied to any targeted tokens instead of selected tokens.',
@@ -145,25 +199,6 @@ export default class Settings {
       type: Boolean,
     });
 
-    game.settings.register(
-      Constants.MODULE_ID,
-      Settings.SHOW_CHAT_MESSAGE_EFFECT_DESCRIPTION,
-      {
-        name: 'Show Chat Message Effect Description',
-        hint: 'This is when effect descriptions are shown on chat messages.',
-        scope: 'world',
-        config: true,
-        default: true,
-        default: 'onAddOrRemove',
-        choices: {
-          onAddOrRemove: 'On Add or Remove',
-          onAddOnly: 'On Add Only',
-          never: 'Never',
-        },
-        type: String,
-      }
-    );
-
     game.settings.register(Constants.MODULE_ID, Settings.SHOW_NESTED_EFFECTS, {
       name: 'Show Nested Effects',
       hint: 'If enabled, nested effects will be shown in the application.',
@@ -172,7 +207,9 @@ export default class Settings {
       default: false,
       type: Boolean,
     });
+  }
 
+  _registerNonConfigSettings() {
     game.settings.register(
       Constants.MODULE_ID,
       Settings.FAVORITE_EFFECT_NAMES,
@@ -252,6 +289,28 @@ export default class Settings {
   }
 
   /**
+   * Returns the game setting for sending chats to the owner of the actor
+   *
+   * @returns {boolean} true if chat messages are sent to the owner of the actor
+   */
+  get sendChatToActorOwner() {
+    return game.settings.get(
+      Constants.MODULE_ID,
+      Settings.SEND_CHAT_TO_ACTOR_OWNER
+    );
+  }
+
+  /**
+   * Returns the game setting for adding a button to chat messages to apply the
+   * matching convenient effect.
+   *
+   * @returns {boolean} true if the button should be added
+   */
+  get addChatButton() {
+    return game.settings.get(Constants.MODULE_ID, Settings.ADD_CHAT_BUTTON);
+  }
+
+  /**
    * Returns the game setting for app controls permission
    *
    * @returns {number} a number representing the chosen role
@@ -317,20 +376,6 @@ export default class Settings {
   }
 
   /**
-   * Returns the game setting for remove controls permission
-   *
-   * @returns {number} a number representing the chosen role
-   */
-  get removeControlsPermission() {
-    return parseInt(
-      game.settings.get(
-        Constants.MODULE_ID,
-        Settings.REMOVE_CONTROLS_PERMISSION
-      )
-    );
-  }
-
-  /**
    * Returns the game setting for the chat effect description
    *
    * @returns {string} a string representing the chosen chat effect description
@@ -349,6 +394,18 @@ export default class Settings {
    */
   get showNestedEffects() {
     return game.settings.get(Constants.MODULE_ID, Settings.SHOW_NESTED_EFFECTS);
+  }
+
+  /**
+   * Returns the game setting for the status effects sort order
+   *
+   * @returns {string} a string representing the chosen status effects sort order
+   */
+  get statusEffectsSortOrder() {
+    return game.settings.get(
+      Constants.MODULE_ID,
+      Settings.STATUS_EFFECTS_SORT_ORDER
+    );
   }
 
   /**
@@ -571,27 +628,7 @@ export default class Settings {
     );
   }
 
-  // TODO below is duplicated from custom-effects-handler.js. Issues with circular dependency on settings.js
-  async _findOrCreateCustomEffectsItem() {
-    return (
-      this._findCustomEffectsItem() ?? (await this._createCustomEffectsItem())
-    );
-  }
-
   _findCustomEffectsItem() {
     return game.items.get(this.customEffectsItemId);
-  }
-
-  async _createCustomEffectsItem() {
-    const item = await CONFIG.Item.documentClass.create({
-      name: 'Custom Convenient Effects',
-      img: 'modules/dfreds-convenient-effects/images/magic-palm.svg',
-      type: 'consumable',
-    });
-
-    log(`Creating custom item with ${item.id}`);
-    await this.setCustomEffectsItemId(item.id);
-
-    return item;
   }
 }

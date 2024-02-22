@@ -1,3 +1,4 @@
+import EffectHelpers from './effects/effect-helpers.js';
 import Settings from './settings.js';
 
 /**
@@ -5,6 +6,7 @@ import Settings from './settings.js';
  */
 export default class ChatHandler {
   constructor() {
+    this._effectHelpers = new EffectHelpers();
     this._settings = new Settings();
   }
 
@@ -38,14 +40,7 @@ export default class ChatHandler {
 
     await ChatMessage.create({
       user: game.userId,
-      whisper:
-        this._settings.chatMessagePermission === CONST.USER_ROLES.PLAYER
-          ? undefined
-          : game.users
-              .filter(
-                (user) => user.role >= this._settings.chatMessagePermission
-              )
-              .map((user) => user.id),
+      whisper: this._getChatTargets(actor),
       content: this._getChatContent({
         effect,
         reason,
@@ -56,25 +51,46 @@ export default class ChatHandler {
   }
 
   _getChatContent({ effect, reason, actorName, isCreateActiveEffect }) {
-    let message = `<p><strong>${effect.name}</strong> - ${reason} ${actorName}</p>`;
+    let message = `<div class="convenient-effects-chat-header"><strong>${effect.name}</strong> - ${reason} ${actorName}</div>`;
     if (
       this._settings.showChatMessageEffectDescription === 'onAddOrRemove' ||
       (this._settings.showChatMessageEffectDescription === 'onAddOnly' &&
         isCreateActiveEffect)
     ) {
-      message += `<p>${this._getDescription(effect)}</p>`;
+      message += `<hr class="convenient-effects-fancy-hr"><div class="convenient-effects-chat-description">${this._getDescription(
+        effect
+      )}</div>`;
     }
 
     return message;
   }
 
+  _getChatTargets(actor) {
+    if (this._settings.chatMessagePermission === CONST.USER_ROLES.PLAYER) {
+      return null;
+    }
+
+    return game.users
+      .filter((user) => {
+        const hasRole = user.role >= this._settings.chatMessagePermission;
+        const ownsActor =
+          !!user?.character?.uuid && user.character.uuid === actor.uuid;
+
+        if (this._settings.sendChatToActorOwner) {
+          return hasRole || ownsActor;
+        } else {
+          return hasRole;
+        }
+      })
+      .map((user) => user.id);
+  }
+
   _getDescription(effect) {
-    if (effect.description) {
-      return effect.description;
-    } else if (effect.flags.convenientDescription) {
-      return effect.flags.convenientDescription;
+    const description = this._effectHelpers.getDescription(effect);
+    if (description) {
+      return description.replace('<p>', '').replace('</p>', '');
     } else {
-      return 'Applies custom effects';
+      return 'No description';
     }
   }
 }

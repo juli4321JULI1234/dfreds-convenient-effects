@@ -1,3 +1,4 @@
+import Constants from '../constants.js';
 import CustomEffectsHandler from '../effects/custom-effects-handler.js';
 import DynamicEffectsAdder from '../effects/dynamic-effects-adder.js';
 import FoundryHelpers from '../foundry-helpers.js';
@@ -31,37 +32,37 @@ export default class ConvenientEffectsController {
       folders: [
         {
           id: 'favorites',
-          label: 'Favorites',
+          name: 'Favorites',
           effects: this._fetchFavorites(),
         },
         {
           id: 'custom',
-          label: 'Custom',
+          name: 'Custom',
           effects: this._fetchUnfavoritedCustomEffects(),
         },
         {
           id: 'conditions',
-          label: 'Conditions',
+          name: 'Conditions',
           effects: this._fetchUnfavoritedConditions(),
         },
         {
           id: 'spells',
-          label: 'Spells',
+          name: 'Spells',
           effects: this._fetchUnfavoritedSpells(),
         },
         {
           id: 'class-features',
-          label: 'Class Features',
+          name: 'Class Features',
           effects: this._fetchUnfavoritedClassFeatures(),
         },
         {
           id: 'equipment',
-          label: 'Equipment',
+          name: 'Equipment',
           effects: this._fetchUnfavoritedEquipment(),
         },
         {
           id: 'other',
-          label: 'Other',
+          name: 'Other',
           effects: this._fetchUnfavoritedOther(),
         },
       ],
@@ -94,7 +95,8 @@ export default class ConvenientEffectsController {
     const effects = game.dfreds.effects;
     return effects.conditions.filter(
       (effect) =>
-        !this._settings.isFavoritedEffect(effect.name) && effect.isViewable
+        !this._settings.isFavoritedEffect(effect.name) &&
+        effect.getFlag(Constants.MODULE_ID, Constants.FLAGS.IS_VIEWABLE)
     );
   }
 
@@ -102,7 +104,8 @@ export default class ConvenientEffectsController {
     const effects = game.dfreds.effects;
     return effects.spells.filter(
       (effect) =>
-        !this._settings.isFavoritedEffect(effect.name) && effect.isViewable
+        !this._settings.isFavoritedEffect(effect.name) &&
+        effect.getFlag(Constants.MODULE_ID, Constants.FLAGS.IS_VIEWABLE)
     );
   }
 
@@ -110,7 +113,8 @@ export default class ConvenientEffectsController {
     const effects = game.dfreds.effects;
     return effects.classFeatures.filter(
       (effect) =>
-        !this._settings.isFavoritedEffect(effect.name) && effect.isViewable
+        !this._settings.isFavoritedEffect(effect.name) &&
+        effect.getFlag(Constants.MODULE_ID, Constants.FLAGS.IS_VIEWABLE)
     );
   }
 
@@ -118,7 +122,8 @@ export default class ConvenientEffectsController {
     const effects = game.dfreds.effects;
     return effects.equipment.filter(
       (effect) =>
-        !this._settings.isFavoritedEffect(effect.name) && effect.isViewable
+        !this._settings.isFavoritedEffect(effect.name) &&
+        effect.getFlag(Constants.MODULE_ID, Constants.FLAGS.IS_VIEWABLE)
     );
   }
 
@@ -126,7 +131,8 @@ export default class ConvenientEffectsController {
     const effects = game.dfreds.effects;
     return effects.other.filter(
       (effect) =>
-        !this._settings.isFavoritedEffect(effect.name) && effect.isViewable
+        !this._settings.isFavoritedEffect(effect.name) &&
+        effect.getFlag(Constants.MODULE_ID, Constants.FLAGS.IS_VIEWABLE)
     );
   }
 
@@ -364,6 +370,7 @@ export default class ConvenientEffectsController {
   async onImportCustomEffectsClick(event) {
     event.stopPropagation();
     await this._customEffectsHandler.importCustomEffectsFromJson();
+    this._viewMvc.render();
   }
 
   /**
@@ -379,7 +386,7 @@ export default class ConvenientEffectsController {
     const effect = game.dfreds.effectInterface.findEffectByName(effectName);
 
     // special handling for nested effects
-    if (effect.nestedEffects.length) {
+    if (game.dfreds.effectInterface.hasNestedEffects(effect)) {
       event.dataTransfer.setData(
         'text/plain',
         JSON.stringify({
@@ -389,20 +396,18 @@ export default class ConvenientEffectsController {
       return;
     }
 
-    // otherwise use core default format
-    const effectData = effect.convertToActiveEffectData({
-      includeAte: this._settings.integrateWithAte,
-      includeTokenMagic: this._settings.integrateWithTokenMagic,
-    });
-
     event.dataTransfer.setData(
       'text/plain',
       JSON.stringify({
         effectName,
         type: 'ActiveEffect',
-        data: effectData,
+        data: effect,
       })
     );
+  }
+
+  canDragStart() {
+    return game.user.role >= this._settings.appControlsPermission;
   }
 
   /**
@@ -463,22 +468,5 @@ export default class ConvenientEffectsController {
       effectNames,
       folderIds,
     };
-  }
-
-  // Fixes bug when dragging over any item onto the convenient effects
-  _isValidEffect(event) {
-    try {
-      const data = JSON.parse(event.dataTransfer.getData('text/plain'));
-      return game.dfreds.effects.all.some(
-        (effect) => effect.name === data.effectName
-      );
-    } catch (err) {
-      return false;
-    }
-  }
-
-  // TODO delete
-  _isEventTargetFavorites(event) {
-    return event.currentTarget.dataset.folderId === 'favorites';
   }
 }

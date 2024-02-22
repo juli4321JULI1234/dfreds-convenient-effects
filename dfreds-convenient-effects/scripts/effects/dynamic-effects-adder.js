@@ -1,19 +1,26 @@
 import Constants from '../constants.js';
+import EffectHelpers from './effect-helpers.js';
+import Settings from '../settings.js';
 
 /**
  * Handles adding dynamic effects for certain effects
  */
 export default class DynamicEffectsAdder {
+  constructor() {
+    this._effectHelpers = new EffectHelpers();
+    this._settings = new Settings();
+  }
+
   /**
    * Adds dynamic effects for specific effects
    *
-   * @param {Effect} effect - the effect to handle
-   * @param {Actor5e} actor - the effected actor
+   * @param {object} effect - the object form of an ActiveEffect to handle
+   * @param {Actor} actor - the affected actor
    */
   async addDynamicEffects(effect, actor) {
     switch (effect.name.toLowerCase()) {
       case '聖言術':
-        this._addDivineWordEffects(effect, actor);
+        await this._addDivineWordEffects(effect, actor);
         break;
       case '變巨':
         this._addEnlargeEffects(effect, actor);
@@ -24,43 +31,68 @@ export default class DynamicEffectsAdder {
       case '縮小':
         this._addReduceEffects(effect, actor);
         break;
+      case '守護靈光':
+        this._addAuraofProtectionEffects(effect, actor);
+        break;
       case '暮光聖域':
         this._addTwilightShroudEffects(effect, actor);
-        break;
+        break;  
     }
   }
 
-  _addDivineWordEffects(effect, actor) {
+  async _addDivineWordEffects(effect, actor) {
     const remainingHp = actor.system.attributes.hp.value;
-    const blinded = game.dfreds.effectInterface.findEffectByName('Blinded');
-    const deafened = game.dfreds.effectInterface.findEffectByName('Deafened');
-    const stunned = game.dfreds.effectInterface.findEffectByName('Stunned');
+    const origin = this._effectHelpers.getId(effect.name);
 
     if (remainingHp <= 20) {
-      // killed, handled in actor-updater
-      effect.description = 'Killed instantly';
+      await actor.update({
+        'system.attributes.hp.value': 0,
+      });
+      await game.dfreds.effectInterface.addEffect({
+        effectName: '死亡',
+        uuid: actor.uuid,
+        overlay: true,
+      });
+      effect.description = '立即死亡';
     } else if (remainingHp <= 30) {
-      // TODO this?
-      // await game.dfreds.effectInterface.addEffect({
-      //   effectName: 'Blinded',
-      //   uuid: actor.uuid,
-      //   origin: effect.origin,
-      // });
-      effect.description = 'Blinded, deafened, and stunned for 1 hour';
-      effect.seconds = Constants.SECONDS.IN_ONE_HOUR;
-      effect.changes.push(
-        ...blinded.changes,
-        ...deafened.changes,
-        ...stunned.changes
-      );
+      await game.dfreds.effectInterface.addEffect({
+        effectName: '目盲',
+        uuid: actor.uuid,
+        origin,
+      });
+      await game.dfreds.effectInterface.addEffect({
+        effectName: '耳聾',
+        uuid: actor.uuid,
+        origin,
+      });
+      await game.dfreds.effectInterface.addEffect({
+        effectName: '震懾',
+        uuid: actor.uuid,
+        origin,
+      });
+      effect.description = '目盲, 耳聾, 和震懾1持續小時。';
+      effect.duration.seconds = Constants.SECONDS.IN_ONE_HOUR;
     } else if (remainingHp <= 40) {
-      effect.description = 'Deafened and blinded for 10 minutes';
-      effect.seconds = Constants.SECONDS.IN_TEN_MINUTES;
-      effect.changes.push(...blinded.changes, ...deafened.changes);
+      await game.dfreds.effectInterface.addEffect({
+        effectName: '目盲',
+        uuid: actor.uuid,
+        origin,
+      });
+      await game.dfreds.effectInterface.addEffect({
+        effectName: '耳聾',
+        uuid: actor.uuid,
+        origin,
+      });
+      effect.description = '目盲和耳聾持續10分鐘。';
+      effect.duration.seconds = Constants.SECONDS.IN_TEN_MINUTES;
     } else if (remainingHp <= 50) {
-      effect.description = 'Deafened for 1 minute';
-      effect.seconds = Constants.SECONDS.IN_ONE_MINUTE;
-      effect.changes.push(...deafened.changes);
+      await game.dfreds.effectInterface.addEffect({
+        effectName: '耳聾',
+        uuid: actor.uuid,
+        origin,
+      });
+      effect.description = '耳聾持續1分鐘';
+      effect.duration.seconds = Constants.SECONDS.IN_ONE_MINUTE;
     }
   }
 
@@ -91,20 +123,22 @@ export default class DynamicEffectsAdder {
       value: size,
     });
 
-    effect.atlChanges.push(
-      ...[
-        {
-          key: 'ATL.width',
-          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
-          value: tokenSize,
-        },
-        {
-          key: 'ATL.height',
-          mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
-          value: tokenSize,
-        },
-      ]
-    );
+    if (this._settings.integrateWithAte) {
+      effect.changes.push(
+        ...[
+          {
+            key: 'ATL.width',
+            mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+            value: tokenSize,
+          },
+          {
+            key: 'ATL.height',
+            mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+            value: tokenSize,
+          },
+        ]
+      );
+    }
   }
 
   _addRageEffects(effect, actor) {
@@ -118,7 +152,6 @@ export default class DynamicEffectsAdder {
     }
 
     this._addResistancesIfBearTotem(effect, actor, barbarianClass);
-    this._addDamageIfZealot(effect, actor, barbarianClass);
     this._determineIfPersistantRage(effect, barbarianClass);
   }
 
@@ -187,41 +220,74 @@ export default class DynamicEffectsAdder {
     }
   }
 
-  _addDamageIfZealot(effect, actor, barbarianClass) {
-    const isZealot =
-      barbarianClass.subclass?.identifier === 'path-of-the-zealot';
-
-    if (isZealot) {
-      effect.changes.push(
-        ...[
-          {
-            key: 'flags.midi-qol.optional.NAME.damage.mwak',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: '+1d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
-          },
-          {
-            key: 'flags.midi-qol.optional.NAME.damage.rwak',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: '+1d6[radiant]+floor(@classes.barbarian.levels / 2)[radiant]',
-          },
-          {
-            key: 'flags.midi-qol.optional.NAME.count',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: 'turn',
-          },
-          {
-            key: 'flags.midi-qol.optional.NAME.label',
-            mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
-            value: '神性狂怒',
-          },
-        ]
-      );
+  _determineIfPersistantRage(effect, barbarianClass) {
+    if (barbarianClass.system.levels > 14) {
+      effect.duration.seconds = null;
+      effect.duration.rounds = null;
+      effect.duration.turns = null;
     }
   }
 
-  _determineIfPersistantRage(effect, barbarianClass) {
-    if (barbarianClass.system.levels > 14) {
-      effect.seconds = undefined;
+  _addAuraofProtectionEffects(effect, actor) {
+    const paladinClass = actor.items.find(
+      (item) => item.type === 'class' && item.name === 'Paladin'
+    );
+
+    if (!paladinClass) {
+      ui.notifications.warn('Selected actor is not a Paladin'); 
+      return;
+    }
+
+    this._subAura(effect, actor, paladinClass);
+    this._addRadius(effect, paladinClass);
+  }
+
+  async _subAura(effect, actor, paladinClass) {
+    const origin = this._effectHelpers.getId(effect.name);
+
+    if (paladinClass.system.levels > 9) { //Aura of Courage
+      effect.changes.push({          
+        key: 'system.traits.ci.value',
+        mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+        value: 'frightened',
+        priority: 5,
+      });  
+    }
+    if (paladinClass.system.levels > 6) {
+      if (paladinClass.subclass?.identifier === 'oath-of-devotion') { //Aura of Devotion
+        effect.changes.push({          
+          key: 'system.traits.ci.value',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: 'charmed',
+          priority: 5,
+          });  
+      } else if (paladinClass.subclass?.identifier === 'oath-of-the-ancients') { //Aura of Warding
+        effect.changes.push({          
+          key: 'system.traits.dr.custom',
+          mode: CONST.ACTIVE_EFFECT_MODES.CUSTOM,
+          value: '法術傷害',
+          priority: 5,
+        });  
+      } else if (paladinClass.subclass?.identifier === 'oath-of-the-watchers') { //Aura of Sentinel
+        effect.changes.push({          
+          key: 'system.attributes.init.bonus',
+          mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+          value: '@prof',
+          priority: 5,
+        });  
+      } else if (paladinClass.subclass?.identifier === 'oath-of-glory') { //Aura of Alacrity
+        await game.dfreds.effectInterface.addEffect({
+          effectName: '迅捷靈光',
+          uuid: actor.uuid,
+          origin,
+        });
+      }
+    }
+  }
+
+  _addRadius(effect, paladinClass) { //Aura of Alacrity has bug
+    if (paladinClass.system.levels > 17) {
+      effect.flags['ActiveAuras']['radius'] = 30;
     }
   }
 
@@ -244,4 +310,5 @@ export default class DynamicEffectsAdder {
       });
     }
   }
+
 }
